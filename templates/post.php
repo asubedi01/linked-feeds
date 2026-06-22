@@ -13,7 +13,7 @@ $author = $post['author'];
 $stats  = $post['stats'];
 $media  = $post['media'];
 ?>
-<article class="linkedin-post linkedin-post--<?php echo esc_attr( $media['kind'] ); ?>">
+<article class="linkedin-post linkedin-post--<?php echo esc_attr( $media['kind'] ); ?>" data-linkedin-detail tabindex="0" role="button" aria-label="<?php esc_attr_e( 'Open post', 'linkedin-feeds' ); ?>">
 
 	<header class="linkedin-post__head">
 		<?php if ( $author['avatar'] ) : ?>

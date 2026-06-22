@@ -10,7 +10,7 @@
 
 - **Demo with no API key, no network:** `[linkedin_feed demo="1" type="profile"]` renders 20 real Bill Gates posts from a saved capture; `type="company"` renders 10 Microsoft posts. Zero quota cost, works offline — **the safe choice for a live demo.**
 - **Live demo (needs key):** `[linkedin_feed type="profile" user="williamhgates"]` / `[linkedin_feed type="company" company="microsoft"]`.
-- **Three layouts, all working:** `grid` (default), `list`, `masonry`.
+- **Four layouts:** `grid` (default), `list`, `masonry`, `carousel` — plus a click-to-open post-detail popup.
 - **Two switchable data providers:** `fresh-scraper` (default, rich+fast) and `fresh-profile` (alt). Switch globally in *Settings → LinkedIn Feeds*, or per-shortcode with `provider="…"`.
 
 ---
@@ -25,7 +25,7 @@
 | `user` | public username (e.g. `williamhgates`) | — | Source for `type="profile"` (live) |
 | `company` | company slug (e.g. `microsoft`) | — | Source for `type="company"` (live) |
 | `demo` | `1` / `true` | off | Render bundled sample, **no API call** |
-| `layout` | `grid` \| `list` \| `masonry` | `grid` | Visual arrangement (see below) |
+| `layout` | `grid` \| `list` \| `masonry` \| `carousel` | `grid` | Visual arrangement (see below) |
 | `limit` | integer | `0` (all) | Cap number of posts shown |
 | `provider` | `fresh-scraper` \| `fresh-profile` | (settings) | Override the configured data provider for this one feed |
 
@@ -35,7 +35,7 @@ Invalid values fall back to the default (e.g. an unknown `layout` → `grid`, an
 
 ## Layout options (multiple, all feasible & verified)
 
-All three are implemented in `assets/css/linkedin-feeds.css` and confirmed rendering the real captures via `dev/render-layouts.php`. Each post card is identical across layouts — only the container arrangement changes — so every media type (text, image, multi-image, video, document, article) renders in all three.
+All four are implemented in `assets/css/linkedin-feeds.css` and confirmed rendering the real captures. Each post card is identical across layouts — only the container arrangement changes — so every media type (text, image, multi-image, video, document, article) renders in all of them.
 
 ### 1. `grid` — responsive card grid *(default)*
 - `repeat(auto-fill, minmax(300px, 1fr))` — columns flow to fit width; equal-height cards.
@@ -52,7 +52,17 @@ All three are implemented in `assets/css/linkedin-feeds.css` and confirmed rende
 - **Best for:** mixed media where posts vary a lot in height (long text next to a single image).
 - `[linkedin_feed demo="1" type="profile" layout="masonry" limit="9"]`
 
-> All three are pure CSS (no JS layout lib), responsive, and theme-agnostic. The only JS is a click-to-zoom image lightbox.
+### 4. `carousel` — horizontal slider with prev/next
+- Flex track with CSS scroll-snap + circular prev/next arrows (lightweight JS scroll, no slider lib).
+- Cards are fixed-width slides (`clamp(260px, 80%, 340px)`); swipe/drag works on touch.
+- **Best for:** a compact "latest posts" strip in a section or sidebar without consuming vertical space.
+- `[linkedin_feed demo="1" type="profile" layout="carousel" limit="10"]`
+
+> Layouts are pure CSS (carousel adds a tiny scroll handler). Responsive and theme-agnostic.
+
+## Post-detail popup
+
+Clicking anywhere on a card (except its links, video, or an image) opens a **post-detail popup** — an enlarged, faithful copy of the post (author, full text, media, engagement, "View on LinkedIn"). Keyboard-accessible (cards are focusable; Enter/Space opens, Esc closes). Clicking an **image** instead opens the **image lightbox**. Both are dependency-free.
 
 ### Layout coverage matrix (verified)
 
@@ -61,6 +71,7 @@ All three are implemented in `assets/css/linkedin-feeds.css` and confirmed rende
 | grid | ✅ | ✅ | `dev/out-profile.html`, `dev/out-company.html` |
 | list | ✅ | ✅ | `dev/render-layouts.php` → 4 cards |
 | masonry | ✅ | ✅ | `dev/render-layouts.php` → 9 cards |
+| carousel | ✅ | ✅ | live: `linkedin-demo-layouts` page |
 
 ---
 
@@ -79,9 +90,10 @@ Driven by the normalized model — same fields across both providers:
 
 1. **Open `dev/out-profile.html` and `dev/out-company.html` in a browser** (pre-rendered from real data — guaranteed to work, no setup). Show personal vs. company feeds side by side.
 2. **In WordPress**, drop `[linkedin_feed demo="1" type="profile"]` on a page → same data, live in the theme.
-3. **Switch `layout="grid"` → `list` → `masonry`** on the same shortcode to show the three arrangements.
-4. **Show the provider switch:** *Settings → LinkedIn Feeds* dropdown, or add `provider="fresh-profile"` to the shortcode — same UI, different data source.
-5. *(Optional, if a key is set)* swap `demo="1"` for `user="williamhgates"` to pull live.
+3. **Switch `layout="grid"` → `list` → `masonry` → `carousel`** on the same shortcode to show the four arrangements (the **`linkedin-demo-layouts`** page shows all four stacked).
+4. **Click a card** to open the post-detail popup; **click an image** to open the lightbox.
+5. **Show the provider switch:** *Settings → LinkedIn Feeds* dropdown, or add `provider="fresh-profile"` to the shortcode — same UI, different data source.
+6. *(Optional, if a key is set)* swap `demo="1"` for `user="williamhgates"` to pull live.
 
 **Demo-day tip:** lead with `demo="1"`. It's offline, costs no quota (free tier is 50 calls/mo), and isn't exposed to a provider hiccup mid-presentation. Keep one live call in reserve to prove it's real.
 

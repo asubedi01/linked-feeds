@@ -21,10 +21,21 @@ if ( empty( $posts ) ) {
 		<?php if ( ! empty( $args['demo'] ) ) : ?><em>(<?php esc_html_e( 'demo data', 'linkedin-feeds' ); ?>)</em><?php endif; ?>
 	</p>
 <?php endif; ?>
+<?php $is_carousel = 'carousel' === $args['layout']; ?>
 <div class="linkedin-feed linkedin-feed--<?php echo esc_attr( $args['layout'] ); ?> linkedin-feed--<?php echo esc_attr( $args['type'] ); ?>">
+	<?php if ( $is_carousel ) : ?>
+		<button type="button" class="linkedin-feed__nav linkedin-feed__nav--prev" data-linkedin-carousel="prev" aria-label="<?php esc_attr_e( 'Previous', 'linkedin-feeds' ); ?>">&#8249;</button>
+		<div class="linkedin-feed__track">
+	<?php endif; ?>
+
 	<?php
 	foreach ( $posts as $post ) {
 		echo LinkedIn_Feeds_Shortcode::render_template( 'post', array( 'post' => $post ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- template returns escaped HTML.
 	}
 	?>
+
+	<?php if ( $is_carousel ) : ?>
+		</div>
+		<button type="button" class="linkedin-feed__nav linkedin-feed__nav--next" data-linkedin-carousel="next" aria-label="<?php esc_attr_e( 'Next', 'linkedin-feeds' ); ?>">&#8250;</button>
+	<?php endif; ?>
 </div>

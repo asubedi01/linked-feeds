@@ -56,7 +56,7 @@ class LinkedIn_Feeds_Shortcode {
 			'user'        => sanitize_text_field( $atts['user'] ),
 			'company'     => sanitize_text_field( $atts['company'] ),
 			'demo'        => filter_var( $atts['demo'], FILTER_VALIDATE_BOOLEAN ),
-			'layout'      => in_array( $atts['layout'], array( 'grid', 'list', 'masonry' ), true ) ? $atts['layout'] : 'grid',
+			'layout'      => in_array( $atts['layout'], array( 'grid', 'list', 'masonry', 'carousel' ), true ) ? $atts['layout'] : 'grid',
 			'limit'       => max( 0, (int) $atts['limit'] ),
 			'provider'    => $provider,
 			'show_source' => filter_var( $atts['show_source'], FILTER_VALIDATE_BOOLEAN ),
