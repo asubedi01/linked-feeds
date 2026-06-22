@@ -47,12 +47,28 @@ class LinkedIn_Feeds_Provider_Fresh_Profile extends LinkedIn_Feeds_Provider {
 		$start = max( 0, ( (int) $page - 1 ) * 50 );
 
 		if ( 'company' === $type ) {
-			$url = 'https://www.linkedin.com/company/' . rawurlencode( $handle );
-			return $this->request(
+			$url  = 'https://www.linkedin.com/company/' . rawurlencode( $handle );
+			$resp = $this->request(
 				self::HOST,
 				'/get-company-posts',
 				array( 'linkedin_url' => $url, 'start' => $start, 'sort_by' => 'recent' )
 			);
+			if ( is_wp_error( $resp ) ) {
+				return $resp;
+			}
+			// Company posts omit the logo (poster = {name, linkedin_url}). Fetch it
+			// from the company-details endpoint (cached a week) and inject so the
+			// feed shows the logo — the "2nd call" for company images on this API.
+			$logo = $this->resolve_company_logo( $handle, $url );
+			if ( $logo && ! empty( $resp['data'] ) ) {
+				foreach ( $resp['data'] as &$post ) {
+					if ( isset( $post['poster'] ) && empty( $post['poster']['image_url'] ) ) {
+						$post['poster']['image_url'] = $logo;
+					}
+				}
+				unset( $post );
+			}
+			return $resp;
 		}
 
 		$url = 'https://www.linkedin.com/in/' . rawurlencode( $handle );
@@ -61,6 +77,26 @@ class LinkedIn_Feeds_Provider_Fresh_Profile extends LinkedIn_Feeds_Provider {
 			'/get-profile-posts',
 			array( 'linkedin_url' => $url, 'start' => $start, 'type' => 'posts' )
 		);
+	}
+
+	/**
+	 * Resolve a company's logo URL from the company-details endpoint, cached a
+	 * week (logos rarely change, so this 2nd call is one-time per company).
+	 *
+	 * @param string $handle Company slug.
+	 * @param string $url    Company LinkedIn URL.
+	 * @return string logo URL or '' on failure.
+	 */
+	private function resolve_company_logo( $handle, $url ) {
+		$cache_key = 'linkedin_feeds_fp_logo_' . md5( $handle );
+		$cached    = get_transient( $cache_key );
+		if ( false !== $cached ) {
+			return $cached;
+		}
+		$res  = $this->request( self::HOST, '/get-company-by-linkedinurl', array( 'linkedin_url' => $url ) );
+		$logo = ! is_wp_error( $res ) && isset( $res['data']['logo_url'] ) ? (string) $res['data']['logo_url'] : '';
+		set_transient( $cache_key, $logo, WEEK_IN_SECONDS );
+		return $logo;
 	}
 
 	/**

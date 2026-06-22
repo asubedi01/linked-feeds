@@ -55,6 +55,18 @@
 	object-fit: cover;
 	display: block;
 }
+.linkedin-post__avatar--placeholder {
+	width: 48px;
+	height: 48px;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: #eef3f8;
+	color: var(--lif-link);
+	font-weight: 700;
+	font-size: 20px;
+}
 .linkedin-post__meta {
 	display: flex;
 	flex-direction: column;

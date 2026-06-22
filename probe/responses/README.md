@@ -8,7 +8,12 @@ Live captures from **Fresh LinkedIn Scraper API** (`fresh-linkedin-scraper-api.p
 | `profile-posts-williamhgates.json` | `profile-posts <urn>` | **Personal feed** — 20 posts: 8 article, 5 video, 4 image, 1 document, plus text-only |
 | `company-posts-1035.json` | `company-posts 1035` (Microsoft) | **Org feed** — 10 posts: document, image, video |
 | `freshprofile-profile-williamhgates.json` | **2nd provider** `fresh-linkedin-profile-data` `/get-profile-posts?linkedin_url=…/in/williamhgates` | **Personal feed, alt provider** — 50 posts: 19 article, 14 video, 11 image, 3 document, 3 text. Verifies the `fresh-profile` provider mapping. |
-| `freshprofile-company-microsoft.json` | **2nd provider** `fresh-linkedin-profile-data` `/get-company-posts?linkedin_url=…/company/microsoft` | **Org feed, alt provider** — 50 posts: 20 video, 17 image, 13 text. Verifies `fresh-profile` company mapping. |
+| `freshprofile-company-microsoft.json` | **2nd provider** `fresh-linkedin-profile-data` `/get-company-posts?linkedin_url=…/company/microsoft` | **Org feed, alt provider** — 50 posts: 20 video, 17 image, 13 text. Verifies `fresh-profile` company mapping. **Posters logo-enriched locally** (see below). |
+| `freshprofile-companydetails-microsoft.json` | `/get-company-by-linkedinurl?linkedin_url=…/company/microsoft` | **Company details** — `logo_url`, `tagline`, `follower_count`, `description`, HQ, industries, etc. Source of the company logo (not in the posts payload). |
+
+#### Company logo requires a 2nd call on `fresh-linkedin-profile-data`
+
+Its `/get-company-posts` payload omits the company logo (poster = `{ name, linkedin_url }`). The logo (`logo_url`) comes only from `/get-company-by-linkedinurl` — a **separate, cacheable call**. The provider (`class-provider-fresh-profile.php`) fetches it once per company (cached a week) and injects it into each post's `poster.image_url`. *(Contrast: `fresh-linkedin-scraper-api` embeds the logo directly in its company-posts response, so no extra call.)* The committed-locally `freshprofile-company-microsoft.json` sample has been logo-enriched so demo mode renders the real logo without a live call.
 
 ### `fresh-linkedin-profile-data` schema notes (differs from `fresh-linkedin-scraper-api`)
 

@@ -20,6 +20,9 @@ $media  = $post['media'];
 			<a class="linkedin-post__avatar" href="<?php echo esc_url( $author['url'] ); ?>" target="_blank" rel="noopener nofollow">
 				<img src="<?php echo esc_url( $author['avatar'] ); ?>" alt="<?php echo esc_attr( $author['name'] ); ?>" loading="lazy" width="48" height="48" />
 			</a>
+		<?php else : ?>
+			<?php // No logo from this provider — render an initial-circle so the header grid stays aligned. ?>
+			<span class="linkedin-post__avatar linkedin-post__avatar--placeholder" aria-hidden="true"><?php echo esc_html( strtoupper( mb_substr( $author['name'] ? $author['name'] : '?', 0, 1 ) ) ); ?></span>
 		<?php endif; ?>
 		<div class="linkedin-post__meta">
 			<a class="linkedin-post__author" href="<?php echo esc_url( $author['url'] ); ?>" target="_blank" rel="noopener nofollow"><?php echo esc_html( $author['name'] ); ?></a>
