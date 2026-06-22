@@ -1,0 +1,194 @@
+/* LinkedIn Feeds — scaffold styles. BEM-ish, theme-agnostic, no framework. */
+
+.linkedin-feed {
+	--lif-border: #e0e0e0;
+	--lif-text: #1d2226;
+	--lif-muted: #66707a;
+	--lif-link: #0a66c2;
+	--lif-radius: 10px;
+	display: grid;
+	gap: 16px;
+}
+
+/* Layouts */
+.linkedin-feed--grid {
+	grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+}
+.linkedin-feed--list {
+	grid-template-columns: minmax(0, 640px);
+	justify-content: center;
+}
+.linkedin-feed--masonry {
+	display: block;
+	column-width: 320px;
+	column-gap: 16px;
+}
+.linkedin-feed--masonry .linkedin-post {
+	break-inside: avoid;
+	margin-bottom: 16px;
+}
+
+/* Card */
+.linkedin-post {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	padding: 16px;
+	border: 1px solid var(--lif-border);
+	border-radius: var(--lif-radius);
+	background: #fff;
+	color: var(--lif-text);
+	font-size: 14px;
+	line-height: 1.5;
+}
+
+.linkedin-post__head {
+	display: grid;
+	grid-template-columns: 48px 1fr auto;
+	gap: 10px;
+	align-items: center;
+}
+.linkedin-post__avatar img {
+	width: 48px;
+	height: 48px;
+	border-radius: 50%;
+	object-fit: cover;
+	display: block;
+}
+.linkedin-post__meta {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+.linkedin-post__author {
+	font-weight: 600;
+	color: var(--lif-text);
+	text-decoration: none;
+}
+.linkedin-post__subtitle,
+.linkedin-post__time {
+	color: var(--lif-muted);
+	font-size: 12px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.linkedin-post__brand {
+	font-weight: 800;
+	color: var(--lif-link);
+	font-size: 18px;
+	line-height: 1;
+}
+
+.linkedin-post__text {
+	white-space: normal;
+	word-wrap: break-word;
+}
+.linkedin-post__text a { color: var(--lif-link); }
+
+/* Media: images */
+.linkedin-post__images {
+	display: grid;
+	gap: 4px;
+	border-radius: 8px;
+	overflow: hidden;
+}
+.linkedin-post__images--1 { grid-template-columns: 1fr; }
+.linkedin-post__images--2 { grid-template-columns: 1fr 1fr; }
+.linkedin-post__images--3,
+.linkedin-post__images--4 { grid-template-columns: 1fr 1fr; }
+.linkedin-post__image img {
+	width: 100%;
+	height: 100%;
+	max-height: 420px;
+	object-fit: cover;
+	display: block;
+}
+
+/* Media: video */
+.linkedin-post__video {
+	width: 100%;
+	background: #000;
+	border-radius: 8px;
+	overflow: hidden;
+}
+.linkedin-post__video video,
+.linkedin-post__video img {
+	width: 100%;
+	height: 100%;
+	display: block;
+	object-fit: contain;
+}
+
+/* Media: article + document cards */
+.linkedin-post__article,
+.linkedin-post__document {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	padding: 12px;
+	border: 1px solid var(--lif-border);
+	border-radius: 8px;
+	text-decoration: none;
+	color: var(--lif-text);
+	background: #f3f6f8;
+}
+.linkedin-post__article-title,
+.linkedin-post__document-title { font-weight: 600; }
+.linkedin-post__article-subtitle,
+.linkedin-post__article-host,
+.linkedin-post__document-pages {
+	color: var(--lif-muted);
+	font-size: 12px;
+}
+.linkedin-post__document {
+	flex-direction: row;
+	align-items: center;
+	gap: 12px;
+}
+.linkedin-post__document-icon { font-size: 28px; }
+.linkedin-post__document-meta { display: flex; flex-direction: column; }
+
+/* Footer */
+.linkedin-post__foot {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-top: auto;
+	padding-top: 8px;
+	border-top: 1px solid var(--lif-border);
+	color: var(--lif-muted);
+	font-size: 12px;
+}
+.linkedin-post__stats { display: flex; gap: 12px; }
+.linkedin-post__permalink {
+	color: var(--lif-link);
+	font-weight: 600;
+	text-decoration: none;
+}
+
+.linkedin-feed-error {
+	padding: 12px;
+	border: 1px solid #f5c2c7;
+	background: #f8d7da;
+	color: #842029;
+	border-radius: 6px;
+	font-size: 13px;
+}
+
+/* Lightbox */
+.linkedin-lightbox {
+	position: fixed;
+	inset: 0;
+	background: rgba(0, 0, 0, 0.85);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 99999;
+	padding: 24px;
+}
+.linkedin-lightbox img {
+	max-width: 95vw;
+	max-height: 95vh;
+	object-fit: contain;
+}

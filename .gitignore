@@ -1,0 +1,19 @@
+# --- Local-only: captured API data (real LinkedIn content + signed/expiring media URLs) ---
+probe/responses/*.json
+probe/asmitasubedi.json
+
+# --- Local-only: generated demo renders (contain real data + expiring media URLs) ---
+dev/out-*.html
+
+# --- Secrets / local env (never commit) ---
+.env
+*.local
+*.secret
+
+# --- OS / editor cruft ---
+.DS_Store
+Thumbs.db
+*.swp
+*~
+.idea/
+.vscode/

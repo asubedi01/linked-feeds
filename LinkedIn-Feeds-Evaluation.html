@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LinkedIn Feeds — API Capability Evaluation</title>
+<style>
+  :root{
+    --ink:#1a2332; --muted:#5c6b7f; --line:#e3e8ef; --bg:#f6f8fb; --card:#ffffff;
+    --li:#0a66c2; --li-dk:#08538f;
+    --green:#0a7d4f; --green-bg:#e8f6ee;
+    --red:#b3261e; --red-bg:#fcebea;
+    --amber:#9a6700; --amber-bg:#fdf3e1;
+    --radius:12px;
+    --shadow:0 1px 2px rgba(16,24,40,.06),0 1px 3px rgba(16,24,40,.05);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.6; font-size:16px; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:980px; margin:0 auto; padding:0 24px 80px;}
+  header.hero{
+    background:linear-gradient(135deg,var(--li-dk),var(--li));
+    color:#fff; padding:48px 0 40px; margin-bottom:32px;
+  }
+  header.hero .wrap{padding-bottom:0}
+  .eyebrow{font-size:13px; letter-spacing:.08em; text-transform:uppercase; opacity:.85; font-weight:600; margin:0 0 8px}
+  header.hero h1{font-size:34px; line-height:1.2; margin:0 0 12px; font-weight:700}
+  header.hero p.sub{font-size:17px; opacity:.92; margin:0; max-width:680px}
+  .meta{margin-top:22px; font-size:13.5px; opacity:.9; display:flex; flex-wrap:wrap; gap:6px 22px}
+  .meta b{font-weight:600}
+
+  section{margin:0 0 34px}
+  h2{font-size:22px; margin:0 0 14px; padding-bottom:8px; border-bottom:2px solid var(--line); font-weight:700}
+  h3{font-size:16.5px; margin:22px 0 8px; font-weight:700}
+  p{margin:0 0 14px}
+  a{color:var(--li); text-decoration:none}
+  a:hover{text-decoration:underline}
+  code{background:#eef2f7; padding:.12em .42em; border-radius:5px; font-size:.86em;
+    font-family:"SF Mono",Menlo,Consolas,monospace; color:#1f3a5f; word-break:break-word}
+
+  .card{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:22px 24px; box-shadow:var(--shadow)}
+
+  /* verdict banner */
+  .verdicts{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:8px}
+  .verdict{border-radius:var(--radius); padding:20px 22px; border:1px solid var(--line); background:var(--card); box-shadow:var(--shadow)}
+  .verdict .tag{display:inline-block; font-size:12px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; padding:4px 10px; border-radius:999px; margin-bottom:10px}
+  .verdict.no .tag{background:var(--red-bg); color:var(--red)}
+  .verdict.maybe .tag{background:var(--amber-bg); color:var(--amber)}
+  .verdict h3{margin:0 0 6px; font-size:17px}
+  .verdict p{margin:0; font-size:14.5px; color:var(--muted)}
+
+  .callout{border-left:4px solid var(--li); background:#eef5fc; padding:14px 18px; border-radius:0 10px 10px 0; margin:18px 0; font-size:15px}
+  .callout.ban{border-left-color:var(--red); background:var(--red-bg)}
+  .callout.ban b{color:var(--red)}
+
+  blockquote{margin:0; padding:12px 18px; border-left:3px solid #c9d4e0; background:#f1f5fa; border-radius:0 8px 8px 0; font-style:italic; color:#34465c; font-size:14.5px}
+  blockquote cite{display:block; font-style:normal; font-size:12.5px; margin-top:6px; color:var(--muted)}
+
+  table{width:100%; border-collapse:collapse; font-size:14px; margin:6px 0 4px; background:var(--card)}
+  th,td{text-align:left; padding:10px 12px; border-bottom:1px solid var(--line); vertical-align:top}
+  th{background:#f0f4f9; font-weight:700; font-size:12.5px; letter-spacing:.02em; text-transform:uppercase; color:var(--muted)}
+  tr:last-child td{border-bottom:none}
+  .tbl-wrap{border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow)}
+  .pill{display:inline-block; font-size:11.5px; font-weight:700; padding:2px 9px; border-radius:999px; white-space:nowrap}
+  .ok{background:var(--green-bg); color:var(--green)}
+  .bad{background:var(--red-bg); color:var(--red)}
+  .warn{background:var(--amber-bg); color:var(--amber)}
+
+  ol.stack{counter-reset:s; list-style:none; padding:0; margin:0}
+  ol.stack li{position:relative; padding:12px 0 12px 46px; border-bottom:1px solid var(--line)}
+  ol.stack li:last-child{border-bottom:none}
+  ol.stack li::before{counter-increment:s; content:counter(s); position:absolute; left:0; top:12px;
+    width:28px; height:28px; background:var(--red-bg); color:var(--red); border-radius:50%;
+    display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px}
+  ol.stack li b{display:block; margin-bottom:2px}
+  ol.stack li span{font-size:14px; color:var(--muted)}
+
+  .opt{border:1px solid var(--line); border-radius:var(--radius); padding:18px 20px; margin-bottom:14px; box-shadow:var(--shadow); background:var(--card)}
+  .opt.best{border-color:#bfe3cd; border-left:4px solid var(--green)}
+  .opt h3{margin:0 0 4px; display:flex; align-items:center; gap:10px}
+  .opt .label{font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; padding:3px 9px; border-radius:999px; background:var(--green-bg); color:var(--green)}
+  .opt p{margin:6px 0 0; font-size:14.5px}
+  .opt .lim{font-size:13.5px; color:var(--muted); margin-top:8px}
+
+  .footnote{font-size:13px; color:var(--muted); margin-top:28px; padding-top:18px; border-top:1px solid var(--line)}
+  .toc{font-size:14px; background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:14px 20px; margin-bottom:30px; box-shadow:var(--shadow)}
+  .toc b{display:block; margin-bottom:6px; font-size:12.5px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted)}
+  .toc a{margin-right:18px; white-space:nowrap; line-height:2}
+
+  @media (max-width:680px){
+    .verdicts{grid-template-columns:1fr}
+    header.hero h1{font-size:27px}
+    .wrap{padding:0 16px 60px}
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <p class="eyebrow">Smash Balloon · API Capability Evaluation</p>
+    <h1>LinkedIn Feeds: What the API Will and Won't Let Us Build</h1>
+    <p class="sub">Can we ship an Instagram-Feeds-style product for LinkedIn — user connects, we fetch their posts, posts display on their website? This is the result of live API testing against a real LinkedIn developer app.</p>
+    <div class="meta">
+      <span><b>Date:</b> June 16, 2026</span>
+      <span><b>App tested:</b> ClickSocial (client ID <code>783vnel7uw3ggw</code>)</span>
+      <span><b>Method:</b> Live OAuth + API probes, two real admin Pages</span>
+      <span><b>Status:</b> Evaluation complete</span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <div class="toc">
+    <b>On this page</b>
+    <a href="#bottom-line">Bottom line</a>
+    <a href="#scopes">Scopes &amp; capabilities</a>
+    <a href="#limits">Limitations</a>
+    <a href="#evidence">Test evidence</a>
+    <a href="#paths">Ways forward</a>
+    <a href="#recommend">Recommendation</a>
+  </div>
+
+  <!-- BOTTOM LINE -->
+  <section id="bottom-line">
+    <h2>Bottom line</h2>
+    <p>The blocker here is <b>not technical capability</b> — it's LinkedIn's terms of service. Unlike Instagram, Facebook, or TikTok, LinkedIn has explicitly named our product category as a prohibited use case. We confirmed this with live API calls, not just by reading docs.</p>
+
+    <div class="verdicts">
+      <div class="verdict no">
+        <span class="tag">Not feasible</span>
+        <h3>Personal member feeds</h3>
+        <p>Reading a member's own posts requires <code>r_member_social</code> — a permission LinkedIn has <b>closed to all new applicants</b>. No other scope substitutes. Confirmed dead via live testing.</p>
+      </div>
+      <div class="verdict maybe">
+        <span class="tag">Technically works, contractually banned</span>
+        <h3>Company / organization Page feeds</h3>
+        <p>The API <b>does</b> return full company-page post content (we verified 200 responses). But LinkedIn's "No Social Feeds" policy explicitly bans displaying this on a website.</p>
+      </div>
+    </div>
+
+    <div class="callout ban">
+      <b>The exact prohibition</b> — verbatim from LinkedIn's policy:
+      <blockquote style="margin-top:8px;background:#fff">
+        "<b>No Social Feeds:</b> Under our Marketing API Terms, none of the data provided via our Community Management APIs can be used in a social feed use case (e.g. to display a feed of LinkedIn company updates on the company's website or intranet)."
+        <cite><a href="https://learn.microsoft.com/en-us/linkedin/marketing/restricted-use-cases?view=li-lms-2026-05">Restricted Uses of LinkedIn Marketing APIs and Data</a> — verified live, June 2026</cite>
+      </blockquote>
+    </div>
+    <p>Violating it risks <b>API access revocation</b>, which on a shared developer app would also take down ClickSocial's production posting integration. So a fetch-and-display feed product is off the table on this app. The viable paths (below) avoid the read API entirely.</p>
+  </section>
+
+  <!-- SCOPES -->
+  <section id="scopes">
+    <h2>Scopes &amp; capabilities — what we actually have</h2>
+    <p>The app's OAuth consent returns this exact scope string:</p>
+    <div class="card" style="margin-bottom:18px">
+      <code>r_basicprofile, r_member_postAnalytics, r_organization_social, r_organization_social_feed, rw_organization_admin</code>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Scope</th><th>What it gives us</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td><code>r_organization_social</code></td><td>Read company-page posts, comments, reactions — the technical core of an org feed</td><td><span class="pill ok">Works</span> (auth'd member must be Page admin)</td></tr>
+          <tr><td><code>r_organization_social_feed</code></td><td>Engagement data on org posts</td><td><span class="pill ok">Works</span></td></tr>
+          <tr><td><code>rw_organization_admin</code></td><td>Discover which Pages a member admins — powers a source picker</td><td><span class="pill ok">Works</span></td></tr>
+          <tr><td><code>r_member_postAnalytics</code></td><td>Member post <b>metrics only</b> (impressions, reactions…) — <b>no</b> post text or content</td><td><span class="pill warn">Metrics only</span></td></tr>
+          <tr><td><code>r_basicprofile</code></td><td>Profile metadata — header display at most</td><td><span class="pill warn">Deprecated</span> (migrate to OIDC)</td></tr>
+          <tr><td><code>r_member_social</code></td><td><b>The one scope that reads a member's own post content</b></td><td><span class="pill bad">Closed permission</span> — not on app, not requestable</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:14px"><code>r_member_social</code> is the crux. LinkedIn's docs state they are <i>"not accepting access requests at this time due to resource constraints,"</i> and it's absent from the permission table even approved Community Management partners receive. There is no path to it today.</p>
+  </section>
+
+  <!-- LIMITATIONS -->
+  <section id="limits">
+    <h2>The limitation stack</h2>
+    <p>Even setting aside the headline ban, a fetch-and-display feed runs into a wall of independent blockers — ordered by severity. Any one of the top four is sufficient to stop the product.</p>
+    <div class="card">
+      <ol class="stack">
+        <li><b>"No Social Feeds" restricted use</b><span>The product category itself is banned for Community Management API data. Violation cost: API revocation, which also takes down ClickSocial's production posting.</span></li>
+        <li><b>48-hour storage cap</b><span>Member social activity data can't be cached beyond 48 hours — directly conflicts with a cache-in-WordPress-database architecture.</span></li>
+        <li><b>Limited Audience rule</b><span>Data obtained to manage a Page may only be shown "to individuals associated with that Page." A public website visitor doesn't qualify — this alone blocks public display.</span></li>
+        <li><b>r_member_social is closed</b><span>Personal feeds are dead regardless of everything else.</span></li>
+        <li><b>Standard-tier gate</b><span>Dev tier caps at 500 calls/app/day, 100/member/day. Upgrade requires a manual review with a screencast of the use case — which would show LinkedIn the exact product they prohibit.</span></li>
+        <li><b>Token lifecycle</b><span>60-day access token, 365-day refresh token. Programmatic refresh works, but annual interactive re-auth per customer is the hard floor.</span></li>
+        <li><b>Versioning tax</b><span>Monthly API versions, sunset at ~12 months. An annual-minimum maintenance commitment per shipped plugin.</span></li>
+        <li><b>Unpublished rate limits</b><span>Per-endpoint limits are only visible in the dev portal after making calls — capacity planning is empirical.</span></li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- EVIDENCE -->
+  <section id="evidence">
+    <h2>Test evidence — live probe results</h2>
+    <p>OAuth completed against the real app using an account holding <b>Administrator</b> role on two LinkedIn Pages. Every claim above is backed by an actual HTTP response.</p>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Probe</th><th>Result</th><th>What it proves</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><b>Org posts</b><br><code>GET /rest/posts?author=org</code></td>
+            <td><span class="pill ok">HTTP 200</span><br>Both Pages: <code>105508535</code> (13 posts) &amp; <code>106536255</code> (2 posts)</td>
+            <td>Full post content returned — <code>commentary</code>, articles, video media, timestamps. <b>Company feeds are technically readable.</b></td>
+          </tr>
+          <tr>
+            <td><b>Member posts</b><br><code>GET /rest/posts?author=person</code></td>
+            <td><span class="pill bad">HTTP 400</span><br>"Member permissions must be used when using member as author"</td>
+            <td>No granted scope unlocks reading a member's own posts. <b>Personal feeds blocked.</b></td>
+          </tr>
+          <tr>
+            <td><b>Member analytics</b><br><code>memberCreatorPostAnalytics</code></td>
+            <td><span class="pill warn">HTTP 200</span><br><code>{count: 670, metricType: IMPRESSION}</code></td>
+            <td><b>The decisive control.</b> Same account: metrics return fine and the member demonstrably has posts (670 impressions) — yet content is refused. Proves the 400 is a <b>permission wall, not an empty feed</b>.</td>
+          </tr>
+          <tr>
+            <td><b>Page discovery</b><br><code>organizationAcls</code></td>
+            <td><span class="pill ok">HTTP 200</span><br>2 orgs, role <code>ADMINISTRATOR</code></td>
+            <td>A source picker (which Pages can I show?) is buildable.</td>
+          </tr>
+          <tr>
+            <td><b>Token exchange</b></td>
+            <td><span class="pill ok">HTTP 200</span><br>access (60d) + refresh (365d)</td>
+            <td>App supports silent refresh; annual re-auth is the floor.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout">
+      <b>Why "no posts" isn't the explanation.</b> An empty feed returns <code>HTTP 200</code> with <code>"elements": []</code>. We got <code>HTTP 400</code> — the API rejecting the request class before any content lookup. And the analytics call proves the member has 670 impressions worth of posts. The block is the missing <code>r_member_social</code> scope, full stop.
+    </div>
+  </section>
+
+  <!-- PATHS -->
+  <section id="paths">
+    <h2>Ways forward — what we <i>could</i> ship</h2>
+    <p>The viable options sidestep the read API and the social-feed ban entirely. In descending order of compliance confidence:</p>
+
+    <div class="opt best">
+      <h3>Publish-and-display loop <span class="label">Strongest wedge</span></h3>
+      <p>A plugin that <b>publishes</b> to LinkedIn from WordPress (the write scopes <code>w_member_social</code> / <code>w_organization_social</code> are unrestricted, including for personal profiles). Since the post originates in the customer's own WP composer, the site already holds the content and the post URN — it can render an "our LinkedIn posts" wall <b>from its own local copies</b>, with deep links to the live posts. No read API call, no Community-Management data displayed.</p>
+      <p class="lim"><b>Why it's defensible:</b> the ban covers "data provided via our Community Management APIs." Customer-authored content originating on their own site isn't that. <b>Covers both personal and company posts</b> — the only route that reaches personal profiles. <b>Limitation:</b> shows only posts made through the plugin, not pre-existing native posts. Needs a legal sanity check.</p>
+    </div>
+
+    <div class="opt">
+      <h3>Curated-embeds plugin <span class="label" style="background:var(--li);color:#fff">ToS-clean</span></h3>
+      <p>LinkedIn officially supports single-post iframe embeds. A plugin where users paste post URLs and we render a styled grid of official embeds works for <b>both personal and company posts</b> — no API, no auth, no data storage.</p>
+      <p class="lim"><b>Limitation:</b> manual curation (no auto-discovery — that needs the closed read API), and iframe styling constraints. Honest framing: a "LinkedIn post showcase," not a live feed. Low build cost; good way to validate category demand.</p>
+    </div>
+
+    <h3 style="margin-top:24px">Paths that are <span style="color:var(--red)">not</span> viable</h3>
+    <p><b>Fetch-and-display company feed</b> — technically works, but banned by "No Social Feeds" + the 48-hour storage cap + the Limited Audience rule. <b>Scraping</b> (how some competitors offer personal-profile feeds without OAuth) — a worsening legal bet: LinkedIn sued Proxycurl in Jan 2025; it shut down July 2025; Apollo.io and Seamless.AI lost their LinkedIn pages in March 2025. A non-starter for Smash Balloon's brand and WordPress.org standing. <b>Member Data Portability (DMA)</b> — EEA members only, separate purpose-restricted terms; not a global feed foundation.</p>
+  </section>
+
+  <!-- RECOMMENDATION -->
+  <section id="recommend">
+    <h2>Recommendation</h2>
+    <div class="card">
+      <p style="margin-top:0">LinkedIn is structurally different from the other networks Smash Balloon supports: the gap is legal, not technical, and the one scope that would enable a true personal feed is closed with no path to it.</p>
+      <p><b>Don't pursue</b> a fetch-and-display feed on a shared production app — the revocation risk to ClickSocial's posting integration is real and the use case is explicitly banned.</p>
+      <p style="margin-bottom:0"><b>If we want a LinkedIn entry in the catalog</b>, the publish-and-display loop is the strongest, most defensible "feeds" wedge and the only one that reaches personal profiles; the curated-embeds plugin is the lowest-cost way to test demand for the category. Both warrant a brief legal review before build.</p>
+    </div>
+  </section>
+
+  <div class="footnote">
+    <p><b>Methodology &amp; sources.</b> Findings are based on live OAuth and REST API probes (LinkedIn API version <code>202605</code>) against the ClickSocial app on June 16, 2026, plus LinkedIn's published Marketing/Community Management API documentation, verified live in June 2026. Full probe logs and the companion technical write-up live in <code>FINDINGS.md</code> alongside this file. Key policy reference: <a href="https://learn.microsoft.com/en-us/linkedin/marketing/restricted-use-cases?view=li-lms-2026-05">Restricted Uses of LinkedIn Marketing APIs and Data</a>.</p>
+  </div>
+
+</div>
+</body>
+</html>
