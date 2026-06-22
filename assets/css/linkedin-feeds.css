@@ -167,6 +167,23 @@
 	text-decoration: none;
 }
 
+.linkedin-feed__source {
+	font-size: 13px;
+	color: var(--lif-muted);
+	margin: 0 0 12px;
+}
+.linkedin-feed__source-badge {
+	display: inline-block;
+	background: var(--lif-link);
+	color: #fff;
+	font-weight: 600;
+	font-size: 11px;
+	padding: 2px 8px;
+	border-radius: 10px;
+	margin-right: 6px;
+}
+.linkedin-feed__source em { color: var(--lif-muted); }
+
 .linkedin-feed-error {
 	padding: 12px;
 	border: 1px solid #f5c2c7;

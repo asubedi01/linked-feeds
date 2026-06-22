@@ -38,9 +38,10 @@ class LinkedIn_Feeds_Shortcode {
 				'user'     => '',        // public username for profile feeds.
 				'company'  => '',        // company slug for company feeds.
 				'demo'     => '',        // "1" → render bundled sample, no API call.
-				'layout'   => 'grid',    // grid | list | masonry.
-				'limit'    => 0,         // 0 = all returned.
-				'provider' => '',        // override the configured provider for this feed.
+				'layout'      => 'grid',    // grid | list | masonry.
+				'limit'       => 0,         // 0 = all returned.
+				'provider'    => '',        // override the configured provider for this feed.
+				'show_source' => '',        // "1" → caption the feed with the data provider (handy for demos).
 			),
 			$atts,
 			'linkedin_feed'
@@ -48,15 +49,18 @@ class LinkedIn_Feeds_Shortcode {
 
 		$provider = sanitize_text_field( $atts['provider'] );
 		$choices  = LinkedIn_Feeds_Provider::choices();
+		$provider = isset( $choices[ $provider ] ) ? $provider : null;
 
 		$args = array(
-			'type'     => in_array( $atts['type'], array( 'profile', 'company' ), true ) ? $atts['type'] : 'profile',
-			'user'     => sanitize_text_field( $atts['user'] ),
-			'company'  => sanitize_text_field( $atts['company'] ),
-			'demo'     => filter_var( $atts['demo'], FILTER_VALIDATE_BOOLEAN ),
-			'layout'   => in_array( $atts['layout'], array( 'grid', 'list', 'masonry' ), true ) ? $atts['layout'] : 'grid',
-			'limit'    => max( 0, (int) $atts['limit'] ),
-			'provider' => isset( $choices[ $provider ] ) ? $provider : null,
+			'type'        => in_array( $atts['type'], array( 'profile', 'company' ), true ) ? $atts['type'] : 'profile',
+			'user'        => sanitize_text_field( $atts['user'] ),
+			'company'     => sanitize_text_field( $atts['company'] ),
+			'demo'        => filter_var( $atts['demo'], FILTER_VALIDATE_BOOLEAN ),
+			'layout'      => in_array( $atts['layout'], array( 'grid', 'list', 'masonry' ), true ) ? $atts['layout'] : 'grid',
+			'limit'       => max( 0, (int) $atts['limit'] ),
+			'provider'    => $provider,
+			'show_source' => filter_var( $atts['show_source'], FILTER_VALIDATE_BOOLEAN ),
+			'source_label' => $choices[ $provider ?? LinkedIn_Feeds_Provider::default_id() ] ?? '',
 		);
 
 		$source = new LinkedIn_Feeds_Feed_Source();

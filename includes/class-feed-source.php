@@ -23,7 +23,7 @@ class LinkedIn_Feeds_Feed_Source {
 	 */
 	public function get_posts( array $args ) {
 		$posts = ! empty( $args['demo'] )
-			? $this->load_sample( $args['type'] )
+			? $this->load_sample( $args['type'], $args['provider'] )
 			: $this->load_live( $args );
 
 		if ( is_wp_error( $posts ) ) {
@@ -37,20 +37,39 @@ class LinkedIn_Feeds_Feed_Source {
 	}
 
 	/**
-	 * Load a saved sample payload (demo mode — no API call). Samples are the
-	 * fresh-scraper captures, normalized with that provider's mapping; demo is a
-	 * UI preview, independent of the live provider setting.
+	 * Load a saved sample payload (demo mode — no API call). Each sample is
+	 * normalized with the provider whose shape it was captured in, so demo mode
+	 * can preview either provider. The provider arg lets a shortcode demo a
+	 * specific API (e.g. provider="fresh-profile") for side-by-side comparison.
 	 *
-	 * @param string $type 'profile' | 'company'.
+	 * @param string      $type     'profile' | 'company'.
+	 * @param string|null $provider Provider id, or null for the configured default.
 	 * @return array[]|WP_Error
 	 */
-	private function load_sample( $type ) {
-		$map  = array(
-			'profile' => 'profile-posts-williamhgates.json',
-			'company' => 'company-posts-1035.json',
-		);
-		$file = LINKEDIN_FEEDS_DIR . 'probe/responses/' . ( isset( $map[ $type ] ) ? $map[ $type ] : $map['profile'] );
+	private function load_sample( $type, $provider = null ) {
+		$pid = $provider ? $provider : LinkedIn_Feeds_Provider::default_id();
 
+		// Per-provider captured samples (filename → matching normalizer).
+		$samples = array(
+			'fresh-scraper' => array(
+				'profile' => 'profile-posts-williamhgates.json',
+				'company' => 'company-posts-1035.json',
+			),
+			'fresh-profile' => array(
+				'profile' => 'freshprofile-profile-williamhgates.json',
+			),
+		);
+
+		// Resolve the sample for this provider+type; fall back to fresh-scraper
+		// when the requested provider has no capture for that type.
+		$file_name   = $samples[ $pid ][ $type ] ?? null;
+		$sample_pid  = $pid;
+		if ( null === $file_name ) {
+			$file_name  = $samples['fresh-scraper'][ $type ] ?? $samples['fresh-scraper']['profile'];
+			$sample_pid = 'fresh-scraper';
+		}
+
+		$file = LINKEDIN_FEEDS_DIR . 'probe/responses/' . $file_name;
 		if ( ! is_readable( $file ) ) {
 			return new WP_Error( 'linkedin_feeds_no_sample', __( 'Sample data file not found.', 'linkedin-feeds' ) );
 		}
@@ -59,8 +78,7 @@ class LinkedIn_Feeds_Feed_Source {
 			return new WP_Error( 'linkedin_feeds_bad_sample', __( 'Sample data is malformed.', 'linkedin-feeds' ) );
 		}
 
-		$provider = LinkedIn_Feeds_Provider::make( 'fresh-scraper' );
-		return $provider->normalize_wrapper( $data );
+		return LinkedIn_Feeds_Provider::make( $sample_pid )->normalize_wrapper( $data );
 	}
 
 	/**
