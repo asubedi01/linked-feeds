@@ -71,7 +71,8 @@ class LinkedIn_Feeds_Provider_Fresh_Profile extends LinkedIn_Feeds_Provider {
 			'id'        => isset( $p['urn'] ) ? (string) $p['urn'] : '',
 			'type'      => ! empty( $p['reshared'] ) ? 'repost' : 'ugc',
 			'text'      => isset( $p['text'] ) ? (string) $p['text'] : '',
-			'url'       => isset( $p['post_url'] ) ? esc_url_raw( $p['post_url'] ) : '',
+			// Profile posts use `post_url`; company posts use `url`.
+			'url'       => esc_url_raw( $p['post_url'] ?? ( $p['url'] ?? '' ) ),
 			'share_urn' => isset( $p['share_urn'] ) ? (string) $p['share_urn'] : '',
 			'timestamp' => isset( $p['posted'] ) ? (int) strtotime( $p['posted'] ) : 0,
 			'author'    => $this->normalize_author( $p ),
@@ -120,12 +121,15 @@ class LinkedIn_Feeds_Provider_Fresh_Profile extends LinkedIn_Feeds_Provider {
 		$poster = isset( $p['poster'] ) && is_array( $p['poster'] ) ? $p['poster'] : array();
 		$url    = isset( $poster['linkedin_url'] ) ? $poster['linkedin_url'] : ( isset( $p['poster_linkedin_url'] ) ? $p['poster_linkedin_url'] : '' );
 
-		$name = trim( ( $poster['first'] ?? '' ) . ' ' . ( $poster['last'] ?? '' ) );
 		$is_company = false !== strpos( (string) $url, '/company/' );
+
+		// Company posters carry a `name`; person posters carry `first`/`last`.
+		$name = isset( $poster['name'] ) ? (string) $poster['name'] : trim( ( $poster['first'] ?? '' ) . ' ' . ( $poster['last'] ?? '' ) );
 		if ( '' === $name && $is_company ) {
-			// Derive a readable name from the company slug.
+			// Last resort: derive a readable name from the company slug.
 			$slug = trim( (string) wp_parse_url( $url, PHP_URL_PATH ), '/' );
 			$slug = preg_replace( '#^company/#', '', $slug );
+			$slug = preg_replace( '#/.*$#', '', $slug ); // drop trailing /posts etc.
 			$name = ucwords( str_replace( '-', ' ', $slug ) );
 		}
 

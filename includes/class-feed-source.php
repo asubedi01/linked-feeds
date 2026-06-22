@@ -57,6 +57,7 @@ class LinkedIn_Feeds_Feed_Source {
 			),
 			'fresh-profile' => array(
 				'profile' => 'freshprofile-profile-williamhgates.json',
+				'company' => 'freshprofile-company-microsoft.json',
 			),
 		);
 

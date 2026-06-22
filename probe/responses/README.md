@@ -8,14 +8,16 @@ Live captures from **Fresh LinkedIn Scraper API** (`fresh-linkedin-scraper-api.p
 | `profile-posts-williamhgates.json` | `profile-posts <urn>` | **Personal feed** — 20 posts: 8 article, 5 video, 4 image, 1 document, plus text-only |
 | `company-posts-1035.json` | `company-posts 1035` (Microsoft) | **Org feed** — 10 posts: document, image, video |
 | `freshprofile-profile-williamhgates.json` | **2nd provider** `fresh-linkedin-profile-data` `/get-profile-posts?linkedin_url=…/in/williamhgates` | **Personal feed, alt provider** — 50 posts: 19 article, 14 video, 11 image, 3 document, 3 text. Verifies the `fresh-profile` provider mapping. |
+| `freshprofile-company-microsoft.json` | **2nd provider** `fresh-linkedin-profile-data` `/get-company-posts?linkedin_url=…/company/microsoft` | **Org feed, alt provider** — 50 posts: 20 video, 17 image, 13 text. Verifies `fresh-profile` company mapping. |
 
 ### `fresh-linkedin-profile-data` schema notes (differs from `fresh-linkedin-scraper-api`)
 
-Mapped in `includes/providers/class-provider-fresh-profile.php`. Real shape (verified June 18):
+Mapped in `includes/providers/class-provider-fresh-profile.php`. Real shape (verified June 18 profile / June 22 company):
 - Wrapper: `{ data:[…], message, paging:{count,pagination_token,start} }`.
-- Post: `urn`, `text`, `post_url`, `share_urn`, `posted` (`"2026-06-17 18:30:19"`), `time` (relative), `num_likes/comments/reposts/reactions` + per-type `num_appreciations/empathy/interests/praises/entertainments`, `reshared`, `repost_*`.
-- `poster`: `{ first, last, headline, image_url, linkedin_url, public_id, urn }` (present ~43/50; reshares fall back to top-level `poster_linkedin_url`).
-- Media: `video:{stream_url,duration}` (no thumbnail), `document:{title,page_count,url}`, **article fields are FLAT** (`article_title`, `article_subtitle`, `article_target_url`), `images:[{url}]`.
+- Post: `urn`, `text`, `share_urn`, `posted` (`"2026-06-17 18:30:19"`), `time` (relative), `num_likes/comments/reposts` + per-type `num_appreciations/empathy/interests/praises/entertainments`, `reshared`, `repost_*`.
+- **Permalink field differs by feed type:** profile posts use **`post_url`**, company posts use **`url`**. The provider falls back `post_url → url`.
+- `poster` shape differs by type: **profile** = `{ first, last, headline, image_url, linkedin_url, public_id, urn }` (present ~43/50; reshares fall back to top-level `poster_linkedin_url`); **company** = `{ name, linkedin_url }` only — **no avatar, no headline**. The provider prefers `poster.name`, else `first`+`last`, else a slug-derived name.
+- Media: `video:{stream_url,duration}` (**no thumbnail** — video tiles render without a poster), `document:{title,page_count,url}`, **article fields are FLAT** (`article_title`, `article_subtitle`, `article_target_url`), `images:[{url}]`.
 - Media URLs are signed/expiring here too.
 
 **Both feeds share one post schema** — a renderer written for one handles the other. Only `author` differs (person vs company).

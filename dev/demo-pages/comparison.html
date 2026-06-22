@@ -1,5 +1,10 @@
-<!-- wp:paragraph --><p>The same profile rendered through both RapidAPI providers. The card design is identical by design (shared templates); the data source differs.</p><!-- /wp:paragraph -->
-<!-- wp:heading --><h2>Provider A — Fresh LinkedIn Scraper</h2><!-- /wp:heading -->
+<!-- wp:paragraph --><p>The same source rendered through both RapidAPI providers. Card design is identical by design (shared templates); only the data source differs. Note fresh-profile videos have no poster image (the API omits thumbnails).</p><!-- /wp:paragraph -->
+<!-- wp:heading --><h2>Profile — Provider A: Fresh LinkedIn Scraper</h2><!-- /wp:heading -->
 [linkedin_feed demo="1" type="profile" provider="fresh-scraper" show_source="1" layout="grid" limit="6"]
-<!-- wp:heading --><h2>Provider B — Fresh LinkedIn Profile Data</h2><!-- /wp:heading -->
+<!-- wp:heading --><h2>Profile — Provider B: Fresh LinkedIn Profile Data</h2><!-- /wp:heading -->
 [linkedin_feed demo="1" type="profile" provider="fresh-profile" show_source="1" layout="grid" limit="6"]
+<!-- wp:separator --><hr class="wp-block-separator"/><!-- /wp:separator -->
+<!-- wp:heading --><h2>Company — Provider A: Fresh LinkedIn Scraper</h2><!-- /wp:heading -->
+[linkedin_feed demo="1" type="company" provider="fresh-scraper" show_source="1" layout="grid" limit="6"]
+<!-- wp:heading --><h2>Company — Provider B: Fresh LinkedIn Profile Data</h2><!-- /wp:heading -->
+[linkedin_feed demo="1" type="company" provider="fresh-profile" show_source="1" layout="grid" limit="6"]
