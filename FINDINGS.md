@@ -3,7 +3,9 @@
 **Date:** June 10, 2026
 **App used:** ClickSocial (client ID `783vnel7uw3ggw`) — pivoted as research vehicle
 **Question answered:** Can we build an Instagram-Feeds-style product (user OAuths → app fetches their posts → posts display on their website)? Is personal-feed display feasible, or is this org-pages-only?
-**Companion docs:** [PITCH.md](./PITCH.md) • [RESEARCH.md](./RESEARCH.md) • [probe toolkit](./probe/README.md)
+**Companion docs:** [LinkedIn-Feeds-Verdict.md](./LinkedIn-Feeds-Verdict.md) (primary verdict) • [RAPIDAPI-FINDINGS.md](./RAPIDAPI-FINDINGS.md) • [API-COMPARISON.md](./API-COMPARISON.md) • [SHORTCODE-DEMO.md](./SHORTCODE-DEMO.md) • [PITCH.md](./PITCH.md) • [RESEARCH.md](./RESEARCH.md) • [probe toolkit](./probe/README.md)
+
+> **Status (June 23, 2026):** §0–§6 below are the **official-API** findings (verdict: **No** — closed permission + banned use case; unchanged). **§7** covers the **RapidAPI third-party route**, since explored to a **working prototype** (both feed types, four layouts, media, popup). The RapidAPI route is *technically* viable but gated by **legal (scraping) and cost (free tier unsustainable)** — see §7 and the consolidated [LinkedIn-Feeds-Verdict.md](./LinkedIn-Feeds-Verdict.md).
 
 ---
 

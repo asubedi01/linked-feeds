@@ -5,6 +5,8 @@
 **Figma:** N/A
 **Time Estimate:** 10 Business Days
 
+> ⚠️ **Historical (April 2026) — the originating pitch.** The evaluation it scoped is complete. Outcome: official API is **not viable** (closed permission + banned use case); a **RapidAPI prototype** was built as an alternative, gated by legal + cost. **Current truth: [LinkedIn-Feeds-Verdict.md](./LinkedIn-Feeds-Verdict.md), [EVALUATION.md](./EVALUATION.md), [RAPIDAPI-FINDINGS.md](./RAPIDAPI-FINDINGS.md).** Kept for original scope/intent.
+
 ---
 
 ## Summary

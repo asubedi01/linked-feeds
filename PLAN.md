@@ -6,6 +6,8 @@
 **Appetite:** 8-week evaluation rock (not a ship commitment)
 **Deliverable:** Working prototype demo + written go/no-go evaluation
 
+> ⚠️ **Historical (April 2026) — the evaluation plan.** Both deliverables are done: the written go/no-go is [LinkedIn-Feeds-Verdict.md](./LinkedIn-Feeds-Verdict.md) / [EVALUATION.md](./EVALUATION.md) (official API = No), and a working prototype now exists on the **RapidAPI** route ([SHORTCODE-DEMO.md](./SHORTCODE-DEMO.md), [RAPIDAPI-FINDINGS.md](./RAPIDAPI-FINDINGS.md)). Kept for the original plan of record.
+
 ---
 
 ## Plan shape

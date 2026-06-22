@@ -106,10 +106,10 @@
     <h1>LinkedIn Feeds: What the API Will and Won't Let Us Build</h1>
     <p class="sub">Can we ship an Instagram-Feeds-style product for LinkedIn — user connects, we fetch their posts, posts display on their website? This is the result of live API testing against a real LinkedIn developer app.</p>
     <div class="meta">
-      <span><b>Date:</b> June 16, 2026</span>
-      <span><b>App tested:</b> ClickSocial (client ID <code>783vnel7uw3ggw</code>)</span>
-      <span><b>Method:</b> Live OAuth + API probes, two real admin Pages</span>
-      <span><b>Status:</b> Evaluation complete</span>
+      <span><b>Date:</b> June 23, 2026 (updated; original June 16, 2026)</span>
+      <span><b>Tested:</b> Official API (ClickSocial app) + RapidAPI providers</span>
+      <span><b>Method:</b> Live OAuth/API probes + a working WordPress prototype</span>
+      <span><b>Status:</b> Official-API evaluation complete; RapidAPI alternative prototyped</span>
     </div>
   </div>
 </header>
@@ -129,7 +129,12 @@
   <!-- BOTTOM LINE -->
   <section id="bottom-line">
     <h2>Bottom line</h2>
-    <p>The blocker here is <b>not technical capability</b> — it's LinkedIn's terms of service. Unlike Instagram, Facebook, or TikTok, LinkedIn has explicitly named our product category as a prohibited use case. We confirmed this with live API calls, not just by reading docs.</p>
+
+    <div class="card" style="border-left:4px solid #0a66c2; background:#eef3f8; margin-bottom:18px">
+      <p style="margin-top:0"><b>Update — June 23, 2026.</b> This page documents the <b>official LinkedIn API</b> evaluation, which is <b>unchanged: still a No</b> for both feed types. Since then we explored the <b>RapidAPI third-party route</b> and built a <b>working prototype</b> (personal + company feeds, four layouts, media, popup) — proving the product is <em>technically</em> buildable off-platform, but gated by <b>legal (scraping) and cost (free tier unsustainable)</b> constraints. The full current verdict and the parallel-track recommendation live in <code>LinkedIn-Feeds-Verdict.md</code>; RapidAPI specifics in <code>RAPIDAPI-FINDINGS.md</code> / <code>API-COMPARISON.md</code>.</p>
+    </div>
+
+    <p>On the official API, the blocker is <b>not technical capability</b> — it's LinkedIn's terms of service. Unlike Instagram, Facebook, or TikTok, LinkedIn has explicitly named our product category as a prohibited use case. We confirmed this with live API calls, not just by reading docs.</p>
 
     <div class="verdicts">
       <div class="verdict no">
@@ -261,14 +266,14 @@
   <section id="recommend">
     <h2>Recommendation</h2>
     <div class="card">
-      <p style="margin-top:0">LinkedIn is structurally different from the other networks Smash Balloon supports: the gap is legal, not technical, and the one scope that would enable a true personal feed is closed with no path to it.</p>
-      <p><b>Don't pursue</b> a fetch-and-display feed on a shared production app — the revocation risk to ClickSocial's posting integration is real and the use case is explicitly banned.</p>
-      <p style="margin-bottom:0"><b>If we want a LinkedIn entry in the catalog</b>, the publish-and-display loop is the strongest, most defensible "feeds" wedge and the only one that reaches personal profiles; the curated-embeds plugin is the lowest-cost way to test demand for the category. Both warrant a brief legal review before build.</p>
+      <p style="margin-top:0"><b>Official LinkedIn API — still No.</b> LinkedIn is structurally different from the other networks Smash Balloon supports: the gap is legal, not technical, and the one scope that would enable a true personal feed is closed with no path to it. Don't pursue a fetch-and-display feed on a shared production app — the revocation risk to ClickSocial's posting integration is real and the use case is explicitly banned. This only flips with a written permission <b>and</b> a passed Standard-tier review, or a LinkedIn policy change. Pursue that as the durable goal.</p>
+      <p><b>RapidAPI route — technically proven, but two gates first.</b> The prototype renders both feed types with rich media, so capability is no longer the question. Before any ship: <b>(1) consult the legal team</b> — every RapidAPI provider scrapes LinkedIn underneath, implicating the User-Agreement anti-scraping clause and the Proxycurl (sued, shut down July 2025) / Apollo / Seamless precedents plus SB's brand standing; and <b>(2) solve the cost model</b> — calls scale with feeds&times;refresh&times;installs, so the free tier (≈1 daily-refreshed feed) can't back a product, and paid tiers force a choice between AM-borne recurring COGS or a customer-paid key.</p>
+      <p style="margin-bottom:0"><b>If — and only if — legal clears it and the cost model closes</b>, the RapidAPI prototype can be hardened and shipped as an <b>interim / parallel offering while we work on obtaining the official LinkedIn API.</b> Adjacent ToS-clean options (publish-and-display loop; curated single-post embeds) remain available if leadership prefers to avoid the scraping question entirely.</p>
     </div>
   </section>
 
   <div class="footnote">
-    <p><b>Methodology &amp; sources.</b> Findings are based on live OAuth and REST API probes (LinkedIn API version <code>202605</code>) against the ClickSocial app on June 16, 2026, plus LinkedIn's published Marketing/Community Management API documentation, verified live in June 2026. Full probe logs and the companion technical write-up live in <code>FINDINGS.md</code> alongside this file. Key policy reference: <a href="https://learn.microsoft.com/en-us/linkedin/marketing/restricted-use-cases?view=li-lms-2026-05">Restricted Uses of LinkedIn Marketing APIs and Data</a>.</p>
+    <p><b>Methodology &amp; sources.</b> Official-API findings are based on live OAuth and REST API probes (LinkedIn API version <code>202605</code>) against the ClickSocial app, June 16, 2026, plus LinkedIn's published Marketing/Community Management API docs (verified live, June 2026). RapidAPI findings (June 18–23, 2026) are based on live calls to <code>fresh-linkedin-scraper-api</code> and <code>fresh-linkedin-profile-data</code> and a working WordPress prototype. Full probe logs and write-ups: <code>FINDINGS.md</code>, <code>RAPIDAPI-FINDINGS.md</code>, <code>API-COMPARISON.md</code>, <code>SHORTCODE-DEMO.md</code>. Key references: <a href="https://learn.microsoft.com/en-us/linkedin/marketing/restricted-use-cases?view=li-lms-2026-05">Restricted Uses of LinkedIn Marketing APIs and Data</a>; scraping climate — LinkedIn v. Proxycurl (shutdown July 2025), Apollo/Seamless page removals (March 2025), LinkedIn User Agreement anti-scraping clause.</p>
   </div>
 
 </div>

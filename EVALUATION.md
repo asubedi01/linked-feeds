@@ -1,15 +1,17 @@
 # LinkedIn Feeds — Evaluation Summary & Recommendation
 
-**Date:** June 11, 2026
+**Date:** June 23, 2026 *(updated; original close-out June 11, 2026)*
 **Owner:** Asmita Subedi
-**Status:** Rock close-out — for stakeholder review and decision
-**Detail docs:** [FINDINGS.md](./FINDINGS.md) (full analysis & sources) • [RESEARCH.md](./RESEARCH.md) • [PITCH.md](./PITCH.md) • [PLAN.md](./PLAN.md) • [probe/](./probe/README.md) (runnable evidence)
+**Status:** Rock close-out + RapidAPI alternative explored (working prototype built) — for stakeholder + legal review
+**Detail docs:** [LinkedIn-Feeds-Verdict.md](./LinkedIn-Feeds-Verdict.md) (primary verdict) • [FINDINGS.md](./FINDINGS.md) • [RAPIDAPI-FINDINGS.md](./RAPIDAPI-FINDINGS.md) • [API-COMPARISON.md](./API-COMPARISON.md) • [SHORTCODE-DEMO.md](./SHORTCODE-DEMO.md) • [probe/](./probe/README.md)
+
+> **Update (June 23):** the original close-out below is unchanged on the **official API** — still a no-go for both feed types. Since then we explored the **RapidAPI third-party route** and built a **working prototype** (both feed types, four layouts, media, popup). It proves the product is *technically* buildable off-platform, but raises **legal (scraping) and cost (free tier unsustainable)** constraints. See the new section "**Alternative explored: RapidAPI**" and the revised decisions. The full, current verdict lives in **[LinkedIn-Feeds-Verdict.md](./LinkedIn-Feeds-Verdict.md)**.
 
 ---
 
-## Verdict
+## Verdict (official API)
 
-**A classic LinkedIn feed plugin — user connects account, we fetch and display their posts on their website — is not viable today, for either personal or company-page feeds.**
+**A classic LinkedIn feed plugin on the *official API* — user connects account, we fetch and display their posts on their website — is not viable today, for either personal or company-page feeds.**
 
 The block is not technical. The API works, our apps are approved partners, OAuth and token refresh work, and the org-posts endpoint is callable with scopes we already hold. The block is LinkedIn's contract:
 
@@ -30,9 +32,19 @@ This supersedes the April research's "viability is strong" conclusion — that w
 | Competitors offering personal feeds use scraping | No API scope could power it; LinkedIn sued Proxycurl (shut down July 2025), removed Apollo/Seamless pages — scraping is a rising legal risk and a non-starter for SB |
 | Both ClickSocial apps are interchangeable, with identical gaps | Identical granted scope strings + refresh tokens verified live on both |
 
-Outstanding probe: `org-posts` against a company page we admin (test account admins none yet). Expected to work; worth the screenshot for completeness.
+Outstanding probe: `org-posts` against a company page we admin — **closed since**; returned 200 with full post content on two admin Pages.
 
-## What we *can* build (descending compliance confidence)
+## Alternative explored: RapidAPI third-party providers (prototype built)
+
+Since the official-API no-go, we evaluated the **RapidAPI** route (third-party services exposing LinkedIn data by API key — the mechanism behind the URL-paste competitors) and built a **working WordPress prototype**:
+- **Both feed types** (personal + company), **two switchable providers**, **four layouts** (grid/list/masonry/carousel), post-detail popup, lightbox, and full media (images, video, **PDF/document carousels**, **article previews** — the LinkedIn-native types competitors mostly miss). Verified live against real data.
+- **Technically, the product is fully buildable this way** — the data is sufficient; the rest is front-end polish.
+
+But two constraints gate it:
+1. **Legal (scraping):** every RapidAPI LinkedIn provider scrapes LinkedIn underneath (the official API can't read arbitrary profiles/companies by URL). That implicates LinkedIn's **User-Agreement anti-scraping clause** and the brand/legal exposure of the **Proxycurl (sued, shut down July 2025) / Apollo / Seamless** precedents — on top of reseller risk (a provider can vanish or be de-listed). **A legal-team call, not an engineering one.**
+2. **Cost (free tier won't sustain a product):** request volume scales with **feeds × refresh × installs**, not page views. One feed refreshed hourly ≈ **720 calls/mo** — ~14× the 50/mo free tier; the free tier realistically covers **~1 feed refreshed daily**. At scale, either **AM hosts a shared key** (recurring per-call COGS that grows with the install base — ~10k installs daily ≈ 300k calls/mo → the $200–500/mo+ tiers) **or customers bring their own key** (signup friction + a monthly bill, unlike our free-to-user official-API plugins). Needs a deliberate cost/architecture decision before any build. Detail: [RAPIDAPI-FINDINGS.md](./RAPIDAPI-FINDINGS.md), [API-COMPARISON.md](./API-COMPARISON.md).
+
+## What we *can* build on the official platform (descending compliance confidence)
 
 1. **Curated embeds showcase** — LinkedIn officially supports single-post iframe embeds for public posts. A "paste post URLs, get a styled wall" plugin is ToS-clean and covers personal *and* org posts. Manual curation, no live feed. Cheapest way to test market demand for "LinkedIn on your website."
 2. **Publish-and-display loop** — write scopes (`w_member_social`, `w_organization_social`) are unrestricted, including personal. A plugin that *posts to* LinkedIn from WordPress already owns the content + post URN locally, so the site can render a feed of those posts **from its own copies** — no Community Management data displayed, deep links to live posts. Only shows posts made through the plugin, but it's automatic, covers personal profiles, and sits on defensible ToS ground (needs a legal sanity check). Natural ClickSocial × Smash Balloon play.
@@ -48,10 +60,14 @@ Outstanding probe: `org-posts` against a company page we admin (test account adm
 
 ## Decisions requested
 
-1. **Accept the no-go** on the classic fetch-and-display feed plugin for Q3 (both personal and org).
-2. **Choose a pivot to validate** (or none): embeds showcase (#1, smallest), publish-and-display loop (#2, most strategic), analytics dashboard (#3, different buyer). Recommendation: scope #2 for a demand/legal check before any build commitment.
-3. **Approve the exception ask:** independent research app + honest CMA application + DMA product application (needs AM business verification: legal name, address, privacy policy, business email) + partner-channel conversation via Alex. ~2–3 days of effort total, mostly waiting on LinkedIn.
-4. **Housekeeping:** rotate both app secrets (shared during this evaluation), revoke test tokens, scrub tokens from probe/README.md before commit.
+1. **Accept the official-API no-go** for the classic fetch-and-display feed plugin (both personal and org) — until permissions are granted *and* the Standard-tier review is passed, or LinkedIn changes policy.
+2. **Consult the legal team on the RapidAPI route (blocking gate).** The prototype proves it works technically; whether we can ship scraped LinkedIn data given the anti-scraping User Agreement, the Proxycurl/Apollo/Seamless precedents, and SB's brand/WP.org standing is a **counsel decision**. Do this before any productization.
+3. **If legal clears it, decide the RapidAPI cost model** (who pays — AM shared key vs. customer key — refresh cadence, relay/proxy, cache TTLs). The free tier is a prototype tool, not a product base.
+4. **Pursue the official API in parallel as the durable goal:** independent research app + honest CMA application + DMA product application (needs AM business verification) + partner-channel conversation. ~2–3 days of effort, mostly waiting on LinkedIn.
+5. **Optionally, a pivot to validate:** embeds showcase (smallest), publish-and-display loop (most strategic), analytics dashboard (different buyer).
+6. **Housekeeping:** rotate both app secrets and the RapidAPI key (all shared during evaluation), revoke test tokens.
+
+**Net recommendation:** Official API stays the long-term foundation but is a No until won. The RapidAPI prototype is real and shippable *technically* — so **consult legal first**, then solve cost; **if both clear, implement RapidAPI as an interim/parallel offering while we work on obtaining the official LinkedIn API.**
 
 ## Cost of being wrong, both directions
 

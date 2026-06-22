@@ -4,6 +4,8 @@
 **Researcher:** Asmita Subedi
 **Purpose:** Gather the facts this pitch depends on — LinkedIn API landscape, what's reusable from ClickSocial, SB feed-plugin primitives, and the real unknowns — so the go/no-go recommendation at the end of the rock rests on evidence rather than optimism.
 
+> ⚠️ **Historical (April 2026). Partly superseded — read alongside current findings.** This doc's "viability is strong" optimism predates the live probes that found the official-API blockers (closed `r_member_social`, "No Social Feeds" ban) and predates the RapidAPI alternative + working prototype. **Current truth: [LinkedIn-Feeds-Verdict.md](./LinkedIn-Feeds-Verdict.md), [FINDINGS.md](./FINDINGS.md), [RAPIDAPI-FINDINGS.md](./RAPIDAPI-FINDINGS.md).** Specific corrections in [FINDINGS.md §5](./FINDINGS.md). Kept for the API-landscape research and context.
+
 ---
 
 ## 1. LinkedIn API Landscape — what's actually accessible

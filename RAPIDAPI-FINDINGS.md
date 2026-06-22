@@ -59,23 +59,24 @@ What the plugin renders today, per media type, and where the providers differ:
 | **Article** | link-preview "card" (title/subtitle/host) → external | No | Both: `title`, `subtitle`, target url. (fresh-profile article fields are flat; fresh-scraper nested — normalized away.) |
 | **Text-only** | text body, auto-linked URLs, line breaks | — | Equivalent. |
 
-**Lightbox scope today:** images only. Videos play inline; documents/articles open in a new tab. A "post-detail popup" lightbox (image + full text + engagement) is a possible polish, not built.
+**Interaction today:** clicking an **image** opens the image **lightbox**; clicking a **card** (anywhere but its links/video/images) opens the **post-detail popup** (enlarged copy — author, full text, media, engagement), keyboard-accessible. Videos play inline; documents/articles open in a new tab.
 
 ---
 
 ## 4. Sizing & layout — are we limited to provider sizes?
 
-**No — display sizing is fully under our CSS control, independent of source pixels.** The three layouts impose their own dimensions:
+**No — display sizing is fully under our CSS control, independent of source pixels.** The four layouts impose their own dimensions:
 
 - **grid**: `repeat(auto-fill, minmax(300px,1fr))`, images `object-fit:cover` capped at `max-height:420px`, equal-height cards.
 - **list**: single 640px centered column.
 - **masonry**: `column-width:320px`, natural heights.
+- **carousel**: horizontal scroll-snap track, fixed-width slides (`clamp(260px,80%,340px)`) + prev/next.
 
 Provider-supplied sizes affect **quality/fidelity, not whether a layout works**:
 - **Images:** `fresh-scraper`'s resolution ladder lets us request a crisp size for the target/retina; `fresh-profile`'s single size we take as-is (fine for typical widths, may soften on large tiles).
 - **Video:** `fresh-scraper` gives the true aspect ratio (no letterboxing) + a poster; `fresh-profile` defaults to 16:9 (vertical videos may letterbox) and shows no poster frame until play.
 
-**Bottom line:** fixed heights/widths and all three layouts are achievable with **either** provider. `fresh-scraper` simply gives more raw material (resolution choice, video posters, true aspect ratios) for a crisper result with less effort.
+**Bottom line:** fixed heights/widths and all four layouts are achievable with **either** provider. `fresh-scraper` simply gives more raw material (resolution choice, video posters, true aspect ratios) for a crisper result with less effort.
 
 ---
 
@@ -100,11 +101,11 @@ Surveyed: EmbedSocial, Tagembed, Elfsight, SociableKIT, Juicer, Curator.io, and 
 
 | Feature | Competitors | Our prototype | Gap |
 |---|---|---|---|
-| Multiple layouts (grid + masonry + carousel + list) | Universal (all ship 3–5) | grid, list, masonry | **Add carousel/slider** |
+| Multiple layouts (grid + masonry + carousel + list) | Universal (all ship 3–5) | ✅ grid, list, masonry, carousel | — (done) |
 | Responsive + column control (ideally per-device) | EmbedSocial, Elfsight, Curator | responsive grid | **Add column/per-device control** |
 | Card: avatar, name, relative time, "View on LinkedIn" | Universal | ✅ all present | — |
 | Like/comment counts (toggleable) | Elfsight, Curator, Juicer, SB (EmbedSocial omits — a gap) | ✅ shown (not yet toggleable) | Make toggleable |
-| Lightbox / popup post detail | Elfsight, EmbedSocial, Curator, SB | **images only** | **Add post-detail popup** |
+| Lightbox / popup post detail | Elfsight, EmbedSocial, Curator, SB | ✅ image lightbox + post-detail popup | — (done) |
 | Light/Dark theme + Custom CSS | Universal | theme-agnostic CSS, no presets | **Add presets + CSS field** |
 | "Load More" / pagination | Universal | not surfaced (providers paginate) | **Wire up** |
 | Moderation + keyword/hashtag filtering | Universal | none | **Add include/exclude** |
@@ -131,7 +132,7 @@ The competitor set converges on the same layouts/toggles, but **almost none fait
 
 ### Is what we have enough for the extra polish? — Verdict
 
-**Yes — the data is sufficient; the remaining work is UI, not API.** Everything the *differentiating* whitespace needs (article cards, PDF/document carousels, multi-image, reposts, reaction breakdown) is already in both providers' responses and already normalized. The polish gaps (carousel layout, post-detail popup, light/dark presets, load-more, live customizer, moderation/filtering) are **all front-end features buildable on the data we have** — no new provider or endpoint required.
+**Yes — the data is sufficient; the remaining work is UI, not API.** Everything the *differentiating* whitespace needs (article cards, PDF/document carousels, multi-image, reposts, reaction breakdown) is already in both providers' responses and already normalized. Carousel layout and the post-detail popup are **already built**; the remaining polish gaps (light/dark presets, load-more, in-card image carousel, inline PDF preview, live customizer, moderation/filtering) are **all front-end features buildable on the data we have** — no new provider or endpoint required.
 
 **Three data-side caveats that do constrain polish:**
 1. **Media expiry** (§2) — must re-host media locally before any of this ships, or feeds rot in 1–3 weeks. *Hard blocker, not polish.*
@@ -146,7 +147,7 @@ The competitor set converges on the same layouts/toggles, but **almost none fait
 
 1. **Media re-hosting** (required for production) — download/cache LinkedIn CDN media locally; hook `linkedin_feeds_localize_media`. Without it, feeds break in ~1–3 weeks.
 2. **fresh-profile video posters** — none available from the API; either accept blank video tiles, generate a poster from the first frame server-side, or prefer `fresh-scraper` for video-heavy feeds.
-3. **Lightbox extension** — optional post-detail popup (image + full text + engagement) for parity with competitor "popup" UX.
+3. ~~Lightbox extension / post-detail popup~~ — **done** (image lightbox + click-card post-detail popup, keyboard-accessible). Carousel layout also **done**.
 4. **Document preview** — currently a link; an inline PDF/first-page thumbnail is a polish option.
 5. **Pagination / "load more"** — both providers paginate; not yet surfaced in the shortcode UI.
 6. **Per-feed-type logo cost (fresh-profile)** — company logo = cached 2nd call; keep the cache warm.

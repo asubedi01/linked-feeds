@@ -2,7 +2,12 @@
 
 A WordPress plugin **prototype** that displays LinkedIn personal-profile and company-page post feeds via a `[linkedin_feed]` shortcode, sourcing data from third-party RapidAPI LinkedIn providers.
 
-> **Status: exploratory.** This is a feasibility prototype, not a shipping product. The official LinkedIn API route was evaluated and found **not viable** (see `LinkedIn-Feeds-Verdict.md` / `FINDINGS.md`). This repo explores the **RapidAPI third-party-scraper** route as an alternative — which works technically but carries compliance/brand considerations the team must weigh (`FINDINGS.md §7`). Read the verdict before treating any of this as a green light.
+> **Status: exploratory.** This is a feasibility prototype, not a shipping product.
+> - **Official LinkedIn API: NO** (unchanged) — closed permission for personal feeds, banned use case for company feeds. Flips only with granted permissions **+ a passed Standard-tier review**, or a LinkedIn policy change.
+> - **RapidAPI third-party route: technically proven** by this prototype, but **gated by (1) legal — it's scraping** (User-Agreement clause; Proxycurl/Apollo/Seamless precedents; brand) and **(2) cost — the free tier can't sustain a product**.
+> - **Path forward:** consult legal; if cleared and the cost model closes, ship RapidAPI as an **interim/parallel offering while pursuing the official API**.
+>
+> Read **`LinkedIn-Feeds-Verdict.md`** (primary verdict) before treating any of this as a green light.
 
 ## What's here
 
@@ -12,11 +17,15 @@ A WordPress plugin **prototype** that displays LinkedIn personal-profile and com
 | `includes/providers/` | Pluggable data providers — `fresh-scraper` and `fresh-profile`, switchable in Settings |
 | `probe/` | CLI probe tools for the official API (`linkedin-probe.php`) and RapidAPI (`rapidapi-probe.php`) |
 | `dev/` | Standalone render/test harnesses (run without WordPress) |
+| `LinkedIn-Feeds-Verdict.md` | **Primary verdict** — official API (No) + RapidAPI route (legal + cost gates) + parallel-track recommendation |
+| `EVALUATION.md` | Stakeholder summary + decisions requested |
 | `FINDINGS.md` | Full API exploration findings (official API §0–6, RapidAPI route §7) |
+| `RAPIDAPI-FINDINGS.md` | Consolidated provider reference: calls/feed, media expiry, display/lightbox/video, sizing, competitor survey |
 | `API-COMPARISON.md` | Comparison of RapidAPI LinkedIn providers + recommendation |
-| `SHORTCODE-DEMO.md` | Shortcode attributes, layout options, and a live-demo script |
-| `LinkedIn-Feeds-Verdict.md` | The official-API feasibility verdict (NOT VIABLE) |
-| `RESEARCH.md`, `PITCH.md`, `PLAN.md`, `EVALUATION.md` | Earlier research and planning artifacts |
+| `MEDIA-EXPIRY.md` | Measured CDN media-URL expiry windows + the monitor |
+| `SHORTCODE-DEMO.md` | Shortcode attributes, layout options, live-demo script |
+| `LinkedIn-Feeds-Evaluation.html` | Rendered evaluation summary (shareable) |
+| `RESEARCH.md`, `PITCH.md`, `PLAN.md` | Historical April-2026 artifacts (banner-flagged) |
 
 ## Quick start
 
@@ -26,7 +35,7 @@ A WordPress plugin **prototype** that displays LinkedIn personal-profile and com
    - `[linkedin_feed type="profile" user="williamhgates"]`
    - `[linkedin_feed type="company" company="microsoft" layout="masonry"]`
 
-See `SHORTCODE-DEMO.md` for all attributes (`type`, `user`, `company`, `demo`, `layout`, `limit`, `provider`) and layouts (`grid` / `list` / `masonry`).
+See `SHORTCODE-DEMO.md` for all attributes (`type`, `user`, `company`, `demo`, `layout`, `limit`, `provider`, `show_source`), the four layouts (`grid` / `list` / `masonry` / `carousel`), and the post-detail popup + image lightbox.
 
 ## Note on demo data & media
 
