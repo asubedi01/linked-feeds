@@ -11,7 +11,7 @@
 - **Demo with no API key, no network:** `[linkedin_feed demo="1" type="profile"]` renders 20 real Bill Gates posts from a saved capture; `type="company"` renders 10 Microsoft posts. Zero quota cost, works offline — **the safe choice for a live demo.**
 - **Live demo (needs key):** `[linkedin_feed type="profile" user="williamhgates"]` / `[linkedin_feed type="company" company="microsoft"]`.
 - **Four layouts:** `grid` (default), `list`, `masonry`, `carousel` — plus a click-to-open post-detail popup.
-- **Two switchable data providers:** `fresh-scraper` (default, rich+fast) and `fresh-profile` (alt). Switch globally in *Settings → LinkedIn Feeds*, or per-shortcode with `provider="…"`.
+- **Two switchable data providers:** `fresh-profile` (**default** — Basic 500/mo, reliable across all scopes incl. hashtag/search) and `fresh-scraper` (free 50/mo, richer media but search/company currently 429-ing). Switch globally in *Settings → LinkedIn Feeds*, or per-shortcode with `provider="…"`.
 
 ---
 

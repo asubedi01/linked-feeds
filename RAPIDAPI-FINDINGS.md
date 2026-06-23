@@ -145,7 +145,8 @@ The competitor set converges on the same layouts/toggles, but **almost none fait
 2. **fresh-profile video has no poster** (§3) — video tiles look blank pre-play. For a video-rich, poster-perfect feed, prefer `fresh-scraper` (or generate posters server-side).
 3. **fresh-profile single image resolution** (§4) — fine for normal tiles; for large "highlight"/hero tiles or retina, `fresh-scraper`'s resolution ladder is crisper.
 
-**Net:** for a polished, LinkedIn-*native* feed (the winning angle), **`fresh-scraper` is the stronger base** (video posters, true aspect ratios, multi-resolution images, logo-inline). `fresh-profile` is a capable fallback whose only real display deficits are video posters and image resolution — both worked around. Neither provider blocks the polish roadmap; only media re-hosting does.
+**Net (updated with subscription reality, June 2026):** **`fresh-profile` is the default and recommended base.** We hold a **Basic plan (500/mo)** on fresh-profile vs only the **free tier (50/mo)** on fresh-scraper — and fresh-profile is reliable across all three content scopes (incl. hashtag/search), whereas fresh-scraper's search/company endpoints have been returning **429**. fresh-profile's only display deficits — no video poster, single image resolution — are minor and worked around. **`fresh-scraper` remains the richer-media option** (video posters, true aspect ratios, multi-resolution images, inline logo) and is worth preferring *per-feed* for video-heavy feeds **if/when it's subscribed at a real tier and behaving**. Neither blocks the polish roadmap; only media re-hosting does.
+> **Credit note:** fresh-profile bills in **credits — posts calls cost 2 credits each** (search-posts also 2; company logo +1). So a "500/mo" Basic plan ≈ **~250 feed-refreshes/mo** if it's 500 credits (still 5× the scraper free tier). Confirm whether your 500 is *requests* or *credits* on the RapidAPI pricing tab.
 
 ---
 

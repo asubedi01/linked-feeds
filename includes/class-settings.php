@@ -122,7 +122,7 @@ class LinkedIn_Feeds_Settings {
 			array(
 				'type'              => 'string',
 				'sanitize_callback' => array( $this, 'sanitize_provider' ),
-				'default'           => 'fresh-scraper',
+				'default'           => 'fresh-profile',
 			)
 		);
 		register_setting(
@@ -144,7 +144,7 @@ class LinkedIn_Feeds_Settings {
 	 */
 	public function sanitize_provider( $value ) {
 		$choices = LinkedIn_Feeds_Provider::choices();
-		return isset( $choices[ $value ] ) ? $value : 'fresh-scraper';
+		return isset( $choices[ $value ] ) ? $value : 'fresh-profile';
 	}
 
 	/**

@@ -62,6 +62,8 @@ A feed product is only as good as the media it can render. Confirmed return fiel
 
 ## Recommendation
 
+> **Update (June 2026, subscription reality):** the **default is now `fresh-profile` (Fresh LinkedIn Profile Data)** — we hold a **Basic plan (500/mo)** there vs only the **free tier (50/mo)** on `fresh-scraper`, and fresh-profile is reliable across **all three content scopes** (personal, company, hashtag/search) while fresh-scraper's search/company endpoints are currently 429-ing. fresh-scraper stays available as a per-feed override for richer media (video posters, multi-resolution) when subscribed and stable. *Credit note: fresh-profile posts calls cost ~2 credits each, so 500/mo ≈ ~250 refreshes — confirm requests-vs-credits on the pricing tab.* The original analysis below still holds on capability; the quota/reliability facts now favor fresh-profile as the base.
+
 **Primary: the FreshData family — and specifically the `fresh-linkedin-scraper-api` listing the scaffold already runs on.** If the choice is strictly limited to the three named, pick **`fresh-linkedin-profile-data`**. Reasoning:
 
 1. **Schema completeness wins for a feed.** Only the FreshData family confirmedly returns images **+ video + document + article + per-type reactions** — the renderer needs all of them (our scaffold already templates all four). `linkedin-data-api`'s unconfirmed media support is too risky to build a visual product on.

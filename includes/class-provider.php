@@ -73,8 +73,11 @@ abstract class LinkedIn_Feeds_Provider {
 	 * @return string
 	 */
 	public static function default_id() {
-		$id = (string) get_option( 'linkedin_feeds_provider', 'fresh-scraper' );
-		return isset( self::registry()[ $id ] ) ? $id : 'fresh-scraper';
+		// Default to fresh-profile: bigger quota (Basic 500/mo vs scraper free 50/mo),
+		// reliable across all 3 content scopes incl. hashtag/search, and currently
+		// stable (fresh-scraper's search/company endpoints have been returning 429).
+		$id = (string) get_option( 'linkedin_feeds_provider', 'fresh-profile' );
+		return isset( self::registry()[ $id ] ) ? $id : 'fresh-profile';
 	}
 
 	/**
