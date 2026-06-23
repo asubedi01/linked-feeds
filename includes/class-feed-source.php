@@ -16,6 +16,65 @@ class LinkedIn_Feeds_Feed_Source {
 	const CACHE_TTL = HOUR_IN_SECONDS;
 
 	/**
+	 * Writable dir for refreshed demo samples (uploads/linkedin-feeds/).
+	 *
+	 * @return string Absolute path (created if missing).
+	 */
+	public static function refresh_dir() {
+		$up  = wp_upload_dir();
+		$dir = trailingslashit( $up['basedir'] ) . 'linkedin-feeds';
+		if ( ! is_dir( $dir ) ) {
+			wp_mkdir_p( $dir );
+		}
+		return $dir;
+	}
+
+	/**
+	 * Re-capture the standard demo feeds from the live API (fresh media URLs) and
+	 * store the normalized posts so demo mode stays alive. Admin-triggered.
+	 *
+	 * @return array<string,string> scope => human status.
+	 */
+	public static function refresh_demo_data() {
+		$scopes = array(
+			'profile' => array( 'profile', 'williamhgates' ),
+			'company' => array( 'company', 'microsoft' ),
+			'search'  => array( 'hashtag', 'AI' ),
+		);
+		$results = array();
+		foreach ( $scopes as $scope => $cfg ) {
+			list( $type, $handle ) = $cfg;
+
+			$provider = LinkedIn_Feeds_Provider::make( null );
+			// Route the search scope to a search-capable provider if needed.
+			if ( 'search' === $scope && ! $provider->supports_search() ) {
+				foreach ( array_keys( LinkedIn_Feeds_Provider::registry() ) as $cand ) {
+					$alt = LinkedIn_Feeds_Provider::make( $cand );
+					if ( $alt->supports_search() && $alt->has_key() ) {
+						$provider = $alt;
+						break;
+					}
+				}
+			}
+			if ( ! $provider->has_key() ) {
+				$results[ $scope ] = __( 'no API key configured', 'linkedin-feeds' );
+				continue;
+			}
+
+			$posts = $provider->get_feed( $type, $handle );
+			if ( is_wp_error( $posts ) ) {
+				$results[ $scope ] = 'error: ' . $posts->get_error_message();
+				continue;
+			}
+			$file = self::refresh_dir() . '/demo-' . $scope . '.json';
+			$ok   = file_put_contents( $file, wp_json_encode( $posts ) ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_put_contents_file_put_contents -- local cache write.
+			/* translators: %d: number of posts captured. */
+			$results[ $scope ] = ( false !== $ok ) ? sprintf( __( '%d posts', 'linkedin-feeds' ), count( $posts ) ) : __( 'write failed', 'linkedin-feeds' );
+		}
+		return $results;
+	}
+
+	/**
 	 * Get normalized posts for a parsed set of shortcode args.
 	 *
 	 * @param array $args { type, user, company, demo, provider, limit }.
@@ -47,6 +106,22 @@ class LinkedIn_Feeds_Feed_Source {
 	 * @return array[]|WP_Error
 	 */
 	private function load_sample( $type, $provider = null ) {
+		// Refreshed-sample override: when an admin clicks "Refresh demo data", we
+		// re-capture the standard demo feeds (fresh media URLs) into uploads and
+		// serve those instead of the bundled (eventually-expiring) JSON. Only for
+		// the default demo (provider=null); the comparison page passes an explicit
+		// provider and keeps the bundled provider-specific samples.
+		if ( null === $provider ) {
+			$scope    = in_array( $type, array( 'hashtag', 'search' ), true ) ? 'search' : $type;
+			$override = self::refresh_dir() . '/demo-' . $scope . '.json';
+			if ( is_readable( $override ) ) {
+				$posts = json_decode( (string) file_get_contents( $override ), true ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- local refreshed cache.
+				if ( is_array( $posts ) ) {
+					return $posts; // already normalized at capture time.
+				}
+			}
+		}
+
 		// Hashtag / search share one captured sample (the reliable fresh-profile
 		// search-posts response). fresh-scraper's search 429'd in testing, so demo
 		// uses fresh-profile's shape regardless of the selected provider.

@@ -20,6 +20,83 @@ class LinkedIn_Feeds_Settings {
 	public function register() {
 		add_action( 'admin_menu', array( $this, 'add_page' ) );
 		add_action( 'admin_init', array( $this, 'register_settings' ) );
+		add_action( 'admin_post_linkedin_feeds_refresh', array( $this, 'handle_refresh' ) );
+		add_action( 'admin_post_linkedin_feeds_clear_cache', array( $this, 'handle_clear_cache' ) );
+		add_action( 'admin_notices', array( $this, 'maybe_notice' ) );
+	}
+
+	/**
+	 * Re-capture the demo feeds (fresh media URLs) + clear caches. Admin action.
+	 */
+	public function handle_refresh() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'Forbidden', 'linkedin-feeds' ) );
+		}
+		check_admin_referer( 'linkedin_feeds_refresh' );
+		$results = LinkedIn_Feeds_Feed_Source::refresh_demo_data();
+		$this->clear_cache();
+		set_transient( 'linkedin_feeds_notice', array( 'kind' => 'refresh', 'results' => $results ), 60 );
+		wp_safe_redirect( $this->settings_url() );
+		exit;
+	}
+
+	/**
+	 * Clear cached live feeds so the next view refetches (fresh media URLs).
+	 */
+	public function handle_clear_cache() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'Forbidden', 'linkedin-feeds' ) );
+		}
+		check_admin_referer( 'linkedin_feeds_clear_cache' );
+		$n = $this->clear_cache();
+		set_transient( 'linkedin_feeds_notice', array( 'kind' => 'clear', 'count' => $n ), 60 );
+		wp_safe_redirect( $this->settings_url() );
+		exit;
+	}
+
+	/**
+	 * Delete all linkedin_feeds_* transients (feed + resolve caches).
+	 *
+	 * @return int Rows deleted.
+	 */
+	private function clear_cache() {
+		global $wpdb;
+		return (int) $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+			"DELETE FROM {$wpdb->options} WHERE option_name LIKE '\_transient\_linkedin\_feeds\_%' OR option_name LIKE '\_transient\_timeout\_linkedin\_feeds\_%'"
+		);
+	}
+
+	/**
+	 * Render the result notice after a refresh / clear action.
+	 */
+	public function maybe_notice() {
+		$notice = get_transient( 'linkedin_feeds_notice' );
+		if ( ! $notice ) {
+			return;
+		}
+		delete_transient( 'linkedin_feeds_notice' );
+		echo '<div class="notice notice-info is-dismissible"><p><strong>LinkedIn Feeds:</strong> ';
+		if ( 'clear' === $notice['kind'] ) {
+			/* translators: %d: number of cache entries cleared. */
+			echo esc_html( sprintf( __( 'Cleared %d cache entries — live feeds will refetch on next view.', 'linkedin-feeds' ), (int) $notice['count'] ) );
+		} else {
+			echo esc_html__( 'Demo data refresh:', 'linkedin-feeds' ) . ' ';
+			$parts = array();
+			foreach ( (array) $notice['results'] as $scope => $status ) {
+				$parts[] = esc_html( $scope . ' — ' . $status );
+			}
+			echo wp_kses_post( implode( ' &middot; ', $parts ) );
+		}
+		echo '</p></div>';
+	}
+
+	/**
+	 * Settings page URL.
+	 *
+	 * @return string
+	 */
+	private function settings_url() {
+		return admin_url( 'options-general.php?page=linkedin-feeds' );
 	}
 
 	/**
@@ -103,6 +180,24 @@ class LinkedIn_Feeds_Settings {
 				</table>
 				<?php submit_button(); ?>
 			</form>
+
+			<h2><?php esc_html_e( 'Keep the demo fresh', 'linkedin-feeds' ); ?></h2>
+			<p class="description">
+				<?php esc_html_e( 'Demo-mode media (images/video) is served from saved samples whose LinkedIn URLs expire in ~1–3 weeks. Re-capture them (needs a key — uses a few API calls) to keep demo feeds live. Live feeds self-refresh hourly and don\'t need this.', 'linkedin-feeds' ); ?>
+			</p>
+			<p>
+				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display:inline">
+					<input type="hidden" name="action" value="linkedin_feeds_refresh" />
+					<?php wp_nonce_field( 'linkedin_feeds_refresh' ); ?>
+					<?php submit_button( __( 'Refresh demo data', 'linkedin-feeds' ), 'secondary', 'submit', false ); ?>
+				</form>
+				&nbsp;
+				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display:inline">
+					<input type="hidden" name="action" value="linkedin_feeds_clear_cache" />
+					<?php wp_nonce_field( 'linkedin_feeds_clear_cache' ); ?>
+					<?php submit_button( __( 'Clear feed cache', 'linkedin-feeds' ), 'secondary', 'submit', false ); ?>
+				</form>
+			</p>
 
 			<h2><?php esc_html_e( 'Usage', 'linkedin-feeds' ); ?></h2>
 			<p><code>[linkedin_feed type="profile" user="williamhgates"]</code> &middot; <code>[linkedin_feed type="company" company="microsoft"]</code></p>

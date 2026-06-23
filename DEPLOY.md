@@ -66,13 +66,9 @@ So people can point feeds at **any** profile/company/hashtag, add a RapidAPI key
 
 ## Caveats to set expectations (read before sharing widely)
 
-1. **Demo media expires (~weeks).** The bundled samples carry signed LinkedIn CDN URLs that lapse — videos/PDFs in ~6–7 days, images in ~3 weeks. When tiles start breaking, **re-capture** on the demo box and re-package (or use live):
-   ```bash
-   cd wp-content/plugins/linkedin-feeds/probe
-   export RAPIDAPI_KEY=...   # see probe/README.md
-   php rapidapi-probe.php profile-posts <urn>     # etc.
-   ```
-   *(Production fix — auto re-hosting media locally — is the tracked build item; see RAPIDAPI-FINDINGS §7.)*
+1. **Demo media expires (~weeks)** — but there's a one-click fix on the demo site. The bundled samples carry signed LinkedIn CDN URLs that lapse (videos/PDFs ~6–7 days, images ~3 weeks). To **keep the demo live while owners decide**, set a RapidAPI key (Step 4), then click **Settings → LinkedIn Feeds → "Refresh demo data"**. It re-captures the standard demo feeds (profile, company, hashtag/search) with fresh URLs into `wp-content/uploads/linkedin-feeds/`, which demo mode then serves automatically. Re-click whenever tiles start to break (uses a few API calls per refresh; tip: set the provider to **fresh-profile** — it's reliable across all scopes, whereas fresh-scraper's search is currently 429-ing). The **"Clear feed cache"** button next to it force-refreshes *live* feeds.
+   - *Note: live feeds self-heal — their hourly cache refetch always pulls fresh URLs, so this is only needed for demo mode.*
+   - *Production fix — auto re-hosting media locally — is the tracked build item; see RAPIDAPI-FINDINGS §7.*
 2. **Live mode costs quota.** Calls scale with feeds × refresh (1-hour cache), **not** page views. The free tier (~50–75/mo) suits a handful of feeds; a busy live playground will exhaust it. Demo mode is free.
 3. **fresh-scraper search currently 429s.** Hashtag/search live runs on `fresh-profile`; the plugin auto-routes there. Personal/company work on either provider.
 4. **It's a prototype on the third-party-scraper route** — fine for an internal demo; not a green-lit product. See the verdict before any external sharing.
