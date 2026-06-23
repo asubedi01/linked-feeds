@@ -39,7 +39,9 @@ cp "$ROOT/SHORTCODE-DEMO.md" "$STAGE/" 2>/dev/null || true
 
 # --- Safety: never ship secrets ---------------------------------------------
 rm -f "$STAGE/.env" "$STAGE/probe/asmitasubedi.json"
-if grep -rIlE "REDACTED|REDACTED|AQ[WTV][A-Za-z0-9_-]{40}" "$STAGE" 2>/dev/null; then
+# Generic patterns (no literal secrets in this file): RapidAPI key shape
+# (…msh…jsn…), LinkedIn app-secret prefix (WPL_), OAuth tokens (AQ…).
+if grep -rIlE "[A-Za-z0-9]{8,}msh[A-Za-z0-9]+jsn[A-Za-z0-9]+|WPL_[A-Za-z0-9]|AQ[WTV][A-Za-z0-9_-]{40}" "$STAGE" 2>/dev/null; then
 	echo "❌ ABORT: a secret was found in the staging tree (see paths above)."
 	exit 1
 fi
