@@ -84,12 +84,15 @@ Smash Balloon's brand and WordPress.org standing make an unconsidered scraping p
 Because the official route is closed, we evaluated the **RapidAPI marketplace** — third-party services that expose LinkedIn data via a simple API key (no OAuth, no LinkedIn app). This is the route the URL-paste competitors use. We went far enough to **build a working prototype**, so the assessment rests on a running product, not speculation.
 
 ## What we built (and proved)
-A WordPress plugin with a `[linkedin_feed]` shortcode that renders **both personal and company feeds** — the literal product the official API cannot deliver:
+A WordPress plugin with a `[linkedin_feed]` shortcode that renders **all three content scopes** — personal, company, and hashtag/search — the literal product the official API cannot deliver:
 - **Two interchangeable providers** behind a normalizer (`fresh-scraper`, `fresh-profile`), switchable in Settings or per-shortcode.
 - **Four layouts** (grid / list / masonry / carousel), **post-detail popup**, image **lightbox**, and full media rendering — images, **video**, **document/PDF carousels**, **article link-previews** (the LinkedIn-native content types competitors mostly fail to render — our clearest differentiation; see `RAPIDAPI-FINDINGS.md §6`).
-- Verified live against real data (Bill Gates profile, Microsoft company page).
+- **Hashtag & keyword search** via the providers' `search-posts` endpoint (verified live on `fresh-profile` — 49 posts for `#AI`; `fresh-scraper`'s search returned upstream 429 in testing, so the plugin auto-routes search to the reliable provider).
+- Verified live against real data (Bill Gates profile, Microsoft company page, `#AI` search).
 
-**Conclusion: technically, the product is fully buildable on RapidAPI** — both feed types, rich media, polished UI. The data is sufficient; what remains is front-end polish, not API capability.
+**Conclusion: technically, the product is fully buildable on RapidAPI** — all three content scopes, rich media, polished UI. The data is sufficient; what remains is front-end polish, not API capability.
+
+> ⚠️ **Scope-specific legal note — hashtag/search is the most exposed.** Personal/company feeds at least target a profile-you-point-at or a page; hashtag/search pulls **arbitrary third parties' posts by topic** — the furthest from any "own content" defense and exactly the Juicer-style scraping the review must weigh. Critically, the **official API has no hashtag/search capability at all**, so unlike personal/company feeds (which have a future official path if permissions open), **this scope is scraping-only, permanently — no official fallback.** Treat it as the last scope to enable, and call it out explicitly to legal.
 
 ## Constraint 1 — Compliance (the legal question)
 Every RapidAPI LinkedIn provider is **scraping LinkedIn underneath** — the official API cannot read arbitrary profiles/companies by URL, so anything that does is scraping by definition. That means:

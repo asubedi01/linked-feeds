@@ -204,11 +204,47 @@ abstract class LinkedIn_Feeds_Provider {
 				),
 			)
 		);
+		return $this->handle_response( $response );
+	}
 
+	/**
+	 * Perform a POST request with a JSON body against a RapidAPI host (some
+	 * endpoints — e.g. post search — are POST).
+	 *
+	 * @param string $host RapidAPI host.
+	 * @param string $path Path beginning with a slash.
+	 * @param array  $body JSON body.
+	 * @return array|WP_Error
+	 */
+	protected function request_post( $host, $path, array $body ) {
+		if ( ! $this->has_key() ) {
+			return new WP_Error( 'linkedin_feeds_no_key', __( 'No RapidAPI key configured.', 'linkedin-feeds' ) );
+		}
+		$response = wp_remote_post(
+			'https://' . $host . $path,
+			array(
+				'timeout' => 25,
+				'headers' => array(
+					'x-rapidapi-key'  => $this->key,
+					'x-rapidapi-host' => $host,
+					'Content-Type'    => 'application/json',
+				),
+				'body'    => wp_json_encode( $body ),
+			)
+		);
+		return $this->handle_response( $response );
+	}
+
+	/**
+	 * Decode + validate a wp_remote_* response.
+	 *
+	 * @param array|WP_Error $response Raw response.
+	 * @return array|WP_Error
+	 */
+	private function handle_response( $response ) {
 		if ( is_wp_error( $response ) ) {
 			return $response;
 		}
-
 		$code = (int) wp_remote_retrieve_response_code( $response );
 		$body = wp_remote_retrieve_body( $response );
 		$data = json_decode( $body, true );
@@ -224,15 +260,23 @@ abstract class LinkedIn_Feeds_Provider {
 		if ( ! is_array( $data ) ) {
 			return new WP_Error( 'linkedin_feeds_bad_json', __( 'Malformed API response.', 'linkedin-feeds' ) );
 		}
-
 		// Some providers return 200 with an in-band failure flag (e.g. a
 		// decommissioned service). Surface that as an error.
 		if ( isset( $data['success'] ) && false === $data['success'] && empty( $data['data'] ) ) {
 			$message = isset( $data['message'] ) ? $data['message'] : __( 'Provider returned an error.', 'linkedin-feeds' );
 			return new WP_Error( 'linkedin_feeds_provider_error', $message );
 		}
-
 		return $data;
+	}
+
+	/**
+	 * Whether this provider supports keyword/hashtag post search.
+	 * Override in providers that implement it.
+	 *
+	 * @return bool
+	 */
+	public function supports_search() {
+		return false;
 	}
 
 	/**

@@ -3,11 +3,14 @@
 **Date:** June 23, 2026
 **Purpose:** Everything verified to date about the two RapidAPI LinkedIn providers wired into this plugin, so implementation doesn't re-discover it. All figures are **empirical** (live calls / captured responses in `probe/responses/`), not docs-guessed, unless flagged.
 
-**The two providers:**
-- **`fresh-scraper`** = Fresh LinkedIn Scraper API (`fresh-linkedin-scraper-api.p.rapidapi.com`)
-- **`fresh-profile`** = Fresh LinkedIn Profile Data (`fresh-linkedin-profile-data.p.rapidapi.com`)
+**The two providers (exact links):**
 
-Both are third-party scrapers (compliance caveats in `FINDINGS.md §7`). One RapidAPI key covers both (key is per-account, not per-API).
+| Provider id | Product | RapidAPI listing | Host | Docs / OpenAPI |
+|---|---|---|---|---|
+| **`fresh-scraper`** | Fresh LinkedIn Scraper API (vendor: saleLeads.ai) | https://rapidapi.com/saleleadsdotai-saleleadsdotai-default/api/fresh-linkedin-scraper-api | `fresh-linkedin-scraper-api.p.rapidapi.com` (`/api/v1/…`) | https://docs.saleleads.ai/api-reference/ · [openapi.json](https://docs.saleleads.ai/api-reference/openapi.json) |
+| **`fresh-profile`** | Fresh LinkedIn Profile Data (vendor: FreshData) | https://rapidapi.com/freshdata-freshdata-default/api/fresh-linkedin-profile-data | `fresh-linkedin-profile-data.p.rapidapi.com` | https://fdocs.info · [llms.txt](https://fdocs.info/llms.txt) · [openapi.json](https://fdocs.info/api-reference/openapi.json) |
+
+Both are third-party scrapers (compliance caveats in `FINDINGS.md §7`). One RapidAPI key covers both (key is per-account, not per-API). Full endpoint inventories: **§8**.
 
 ---
 
@@ -19,6 +22,9 @@ Both are third-party scrapers (compliance caveats in `FINDINGS.md §7`). One Rap
 | **Company posts** | **2**: `company/profile?company=` (→ `company_id`) then `company/posts?company_id=` | **1**: `get-company-posts?linkedin_url=…/company/<slug>` |
 | **+ company logo** | included in posts (and in the resolve response) — **no extra call** | **+1**: `get-company-by-linkedinurl` (`logo_url`) — posts omit it |
 | **Author avatar (personal)** | included in posts | included in posts (`poster.image_url`) |
+| **Hashtag / keyword search** | **1**: `GET /api/v1/search/posts?keyword=` — **but returned upstream HTTP 429 in testing (unreliable)** | **1**: `POST /search-posts {search_keywords}` — **verified working (49 posts for `#AI`)** |
+
+**Content scope coverage — all three scopes are reachable:** personal ✅, company ✅, **hashtag/search ✅** (both providers expose post-search; **no dedicated hashtag endpoint** on either — a hashtag feed is just `#tag` as the keyword). **fresh-profile is the reliable search provider** (verified live); **fresh-scraper's `/search/posts` returned 429 "Request denied" on every attempt** (June 2026) — wired but treat as best-effort. The plugin auto-routes hashtag/search to a search-capable provider and surfaces upstream failures as a clean error. ⚠️ Hashtag/search is the **highest-compliance-risk scope** (arbitrary third-party content by topic) and has **no official-API fallback** — flag in legal review.
 
 **Key insight — the resolve/extra calls are one-time and cacheable:**
 - `fresh-scraper`: the `urn`/`company_id` is stable → cache it (plugin caches **1 week**). **Ongoing cost = 1 posts call per refresh.**
@@ -151,3 +157,43 @@ The competitor set converges on the same layouts/toggles, but **almost none fait
 4. **Document preview** — currently a link; an inline PDF/first-page thumbnail is a polish option.
 5. **Pagination / "load more"** — both providers paginate; not yet surfaced in the shortcode UI.
 6. **Per-feed-type logo cost (fresh-profile)** — company logo = cached 2nd call; keep the cache warm.
+
+---
+
+## 8. Endpoint catalogs (both providers) — what's available & expandable
+
+Sourced from each vendor's OpenAPI spec (June 2026). Used endpoints are **bold**. Credit costs are per the vendors' credit tables.
+
+### 8a. `fresh-scraper` — `fresh-linkedin-scraper-api.p.rapidapi.com` (~45 paths, **all GET**, ~1 credit each)
+
+- **Search (5):** `GET /api/v1/search/posts` *(keyword; the hashtag/search route — **429 in testing**)*, `/search/people` (name + rich filters), `/search/location`, `/search/schools`, `/search/suggestion-industry` (the last three are id-lookup helpers for building filter UIs).
+- **User (20):** **`/user/profile`** (10 `include_*` flags, +1 credit each), **`/user/posts`**, `/user/comments`, `/user/reactions`, `/user/images`, `/user/videos`, `/user/documents`, `/user/about`, `/user/contact`, `/user/follower-and-connection`, `/user/experience`, `/user/educations`, `/user/skills`, `/user/certifications`, `/user/honors`, `/user/publications`, `/user/volunteers`, `/user/recommendations`, `/user/save-to-pdf`. (Most accept `urn` OR `username`; `username` adds +1 credit.)
+- **Post (4):** `/post/detail`, `/post/comments`, `/post/reactions`, `/post/reposts` (by `post_id`).
+- **Company (7):** **`/company/profile`**, **`/company/posts`**, `/company/people`, `/company/jobs`, `/company/job-count`, `/company/affiliated-pages`, `/company/associated-member-insights` (accept `company_id` OR `company` name; name +1 credit).
+- **Jobs (2):** `/job/search` (keyword + filters), `/job/detail`.
+- **Group (2):** `/group/info`, `/group/posts`.
+- **Ad Library (2):** `/ad-library/search`, `/ad-library/detail`.
+- **Hidden/beta (no GET defined yet):** `/job/skills`, `/user/interests/{companies,groups,top-voices}`.
+
+### 8b. `fresh-profile` — `fresh-linkedin-profile-data.p.rapidapi.com` (~26+ endpoints, GET **and** POST)
+
+- **Profile:** **`GET /get-profile-posts`** (`type` posts/comments/reactions), `GET /get-personal-profile` (+`include_*`), `GET /get-profile-by-sn-url`, `GET /get-profile-recent-activity-time`.
+- **Post engagement:** `GET /get-post-comments` (`urn`), `GET /get-post-reactions` (`urn`).
+- **Company:** **`GET /get-company-posts`**, **`GET /get-company-by-linkedinurl`** (*logo_url*), `GET /get-company-by-id`, `GET /get-company-by-domain`, `GET /get-company-jobs-count`, `GET /get-company-insights` (Sales Nav, 5cr), `GET /get-account-iq` (Sales Nav, 5cr), `POST /find-custom-headcount`.
+- **Post search:** **`POST /search-posts`** (`search_keywords`, `sort_by` Latest/Top, `date_posted`, `content_type`, `from_member`, `from_company`, `author_keyword`, `author_industry`, `mentioning_*`) — **the hashtag/search route (verified)**.
+- **Lead/people search (async, multi-step, 50cr+):** `POST /search-leads`, `POST /lead-search-at-scale` (custom plan), `POST /search-employees-by-sales-nav-url`, then `GET /check-search-status` + `GET /get-search-results`.
+- **Company search (async, 25cr+):** `POST /search-companies`, `POST /search-companies-by-sales-nav-url`, `GET /check-search-companies-status`, `GET /get-search-companies-results`.
+- **Jobs:** `POST /search-jobs`, `GET /get-job-details`.
+- **Google-sourced:** `POST /google-full-profiles`, plus company/school page lookups via Google.
+- **Other (credit table only):** recommendations given/received, years-of-experience, open-to-work / open-profile status, profile PDF CV.
+
+### Expansion opportunities (beyond the three feed scopes)
+
+Buildable later on data we can already reach — **no new provider needed**:
+- **Engagement modules:** comment threads / reactor lists / reposts (`*/post/comments|reactions|reposts`).
+- **Richer cards:** author experience/skills/recommendations; profile PDF export.
+- **People & company search widgets:** `/search/people`, `/search-companies` (technographic, headcount-growth, hiring filters) — prospecting/ABM angle (closer to ClickSocial than Smash Balloon).
+- **Jobs board / company hiring** modules (`/job/search`, `/company/jobs`).
+- **Groups & Ad Library** (fresh-scraper only) — niche competitive/ad-intel.
+
+> Note: most expansion endpoints (search, leads, Sales Nav, jobs) are prospecting/enrichment features — a *different product* from a display "feed." For the feed product, the relevant additions are engagement display and richer post/author cards.

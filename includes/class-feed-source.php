@@ -47,6 +47,21 @@ class LinkedIn_Feeds_Feed_Source {
 	 * @return array[]|WP_Error
 	 */
 	private function load_sample( $type, $provider = null ) {
+		// Hashtag / search share one captured sample (the reliable fresh-profile
+		// search-posts response). fresh-scraper's search 429'd in testing, so demo
+		// uses fresh-profile's shape regardless of the selected provider.
+		if ( 'hashtag' === $type || 'search' === $type ) {
+			$file = LINKEDIN_FEEDS_DIR . 'probe/responses/freshprofile-searchposts-hashtag-ai.json';
+			if ( ! is_readable( $file ) ) {
+				return new WP_Error( 'linkedin_feeds_no_sample', __( 'Search sample data not found.', 'linkedin-feeds' ) );
+			}
+			$data = json_decode( (string) file_get_contents( $file ), true ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- local bundled sample.
+			if ( ! is_array( $data ) ) {
+				return new WP_Error( 'linkedin_feeds_bad_sample', __( 'Search sample is malformed.', 'linkedin-feeds' ) );
+			}
+			return LinkedIn_Feeds_Provider::make( 'fresh-profile' )->normalize_wrapper( $data );
+		}
+
 		$pid = $provider ? $provider : LinkedIn_Feeds_Provider::default_id();
 
 		// Per-provider captured samples (filename → matching normalizer).
@@ -89,14 +104,41 @@ class LinkedIn_Feeds_Feed_Source {
 	 * @return array[]|WP_Error
 	 */
 	private function load_live( array $args ) {
-		$handle = 'company' === $args['type'] ? $args['company'] : $args['user'];
+		switch ( $args['type'] ) {
+			case 'company':
+				$handle = $args['company'];
+				break;
+			case 'hashtag':
+				$handle = $args['tag'];
+				break;
+			case 'search':
+				$handle = $args['query'];
+				break;
+			default:
+				$handle = $args['user'];
+		}
 		if ( '' === $handle ) {
-			return new WP_Error( 'linkedin_feeds_no_source', __( 'No LinkedIn profile or company specified.', 'linkedin-feeds' ) );
+			return new WP_Error( 'linkedin_feeds_no_source', __( 'No LinkedIn profile, company, hashtag, or search term specified.', 'linkedin-feeds' ) );
 		}
 
 		$provider = LinkedIn_Feeds_Provider::make( $args['provider'] );
 		if ( ! $provider->has_key() ) {
 			return new WP_Error( 'linkedin_feeds_no_key', __( 'Add a RapidAPI key (or use demo="1").', 'linkedin-feeds' ) );
+		}
+
+		// Hashtag/search needs a search-capable provider; route to one if the
+		// selected provider doesn't support it.
+		if ( ( 'hashtag' === $args['type'] || 'search' === $args['type'] ) && ! $provider->supports_search() ) {
+			foreach ( array_keys( LinkedIn_Feeds_Provider::registry() ) as $candidate ) {
+				$alt = LinkedIn_Feeds_Provider::make( $candidate );
+				if ( $alt->supports_search() && $alt->has_key() ) {
+					$provider = $alt;
+					break;
+				}
+			}
+			if ( ! $provider->supports_search() ) {
+				return new WP_Error( 'linkedin_feeds_no_search', __( 'No configured provider supports hashtag/search feeds.', 'linkedin-feeds' ) );
+			}
 		}
 
 		// Cache keyed by provider + type + handle so switching providers re-fetches.

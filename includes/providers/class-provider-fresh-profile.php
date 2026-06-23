@@ -39,12 +39,33 @@ class LinkedIn_Feeds_Provider_Fresh_Profile extends LinkedIn_Feeds_Provider {
 
 	/**
 	 * {@inheritDoc}
+	 */
+	public function supports_search() {
+		return true;
+	}
+
+	/**
+	 * {@inheritDoc}
 	 *
 	 * One call, keyed by the LinkedIn URL built from the handle. Pagination is
 	 * offset-based (`start`): page 1 = 0, page 2 = 50, ...
 	 */
 	protected function get_raw( $type, $handle, $page ) {
 		$start = max( 0, ( (int) $page - 1 ) * 50 );
+
+		// Hashtag / keyword search — POST /search-posts. Hashtag = "#tag" keyword.
+		if ( 'hashtag' === $type || 'search' === $type ) {
+			$keywords = 'hashtag' === $type ? '#' . ltrim( $handle, '#' ) : $handle;
+			return $this->request_post(
+				self::HOST,
+				'/search-posts',
+				array(
+					'search_keywords' => $keywords,
+					'sort_by'         => 'Latest',
+					'page'            => max( 1, (int) $page ),
+				)
+			);
+		}
 
 		if ( 'company' === $type ) {
 			$url  = 'https://www.linkedin.com/company/' . rawurlencode( $handle );
@@ -115,7 +136,7 @@ class LinkedIn_Feeds_Provider_Fresh_Profile extends LinkedIn_Feeds_Provider {
 			'stats'     => array(
 				'likes'     => isset( $p['num_likes'] ) ? (int) $p['num_likes'] : 0,
 				'comments'  => isset( $p['num_comments'] ) ? (int) $p['num_comments'] : 0,
-				'shares'    => isset( $p['num_reposts'] ) ? (int) $p['num_reposts'] : 0,
+				'shares'    => (int) ( $p['num_reposts'] ?? $p['num_shares'] ?? 0 ),
 				'reactions' => $this->reactions( $p ),
 			),
 			'media'     => $this->normalize_media( $p ),
@@ -155,7 +176,18 @@ class LinkedIn_Feeds_Provider_Fresh_Profile extends LinkedIn_Feeds_Provider {
 	 */
 	private function normalize_author( array $p ) {
 		$poster = isset( $p['poster'] ) && is_array( $p['poster'] ) ? $p['poster'] : array();
-		$url    = isset( $poster['linkedin_url'] ) ? $poster['linkedin_url'] : ( isset( $p['poster_linkedin_url'] ) ? $p['poster_linkedin_url'] : '' );
+
+		// Search-posts results carry FLAT poster fields instead of a nested object.
+		if ( empty( $poster ) && isset( $p['poster_name'] ) ) {
+			$poster = array(
+				'name'         => $p['poster_name'],
+				'image_url'    => $p['poster_image_url'] ?? '',
+				'headline'     => $p['poster_title'] ?? '',
+				'linkedin_url' => $p['poster_linkedin_url'] ?? '',
+			);
+		}
+
+		$url = isset( $poster['linkedin_url'] ) ? $poster['linkedin_url'] : ( isset( $p['poster_linkedin_url'] ) ? $p['poster_linkedin_url'] : '' );
 
 		$is_company = false !== strpos( (string) $url, '/company/' );
 

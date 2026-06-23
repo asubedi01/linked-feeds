@@ -34,8 +34,29 @@ class LinkedIn_Feeds_Provider_Fresh_Scraper extends LinkedIn_Feeds_Provider {
 
 	/**
 	 * {@inheritDoc}
+	 *
+	 * This provider exposes GET /api/v1/search/posts, but it returned upstream
+	 * 429 "Request denied" in testing (June 2026) — treat search as unreliable
+	 * here and prefer fresh-profile for hashtag/search feeds.
+	 */
+	public function supports_search() {
+		return true;
+	}
+
+	/**
+	 * {@inheritDoc}
 	 */
 	protected function get_raw( $type, $handle, $page ) {
+		// Keyword / hashtag search — GET /api/v1/search/posts (no resolve step).
+		if ( 'hashtag' === $type || 'search' === $type ) {
+			$keyword = 'hashtag' === $type ? '#' . ltrim( $handle, '#' ) : $handle;
+			return $this->request(
+				self::HOST,
+				'/api/v1/search/posts',
+				array( 'keyword' => $keyword, 'sort_by' => 'date_posted', 'page' => $page )
+			);
+		}
+
 		$id = $this->resolve_id( $type, $handle );
 		if ( is_wp_error( $id ) ) {
 			return $id;
@@ -93,7 +114,7 @@ class LinkedIn_Feeds_Provider_Fresh_Scraper extends LinkedIn_Feeds_Provider {
 		return array(
 			'id'        => isset( $p['id'] ) ? (string) $p['id'] : '',
 			'type'      => isset( $p['post_type'] ) ? $p['post_type'] : '',
-			'text'      => isset( $p['text'] ) ? (string) $p['text'] : '',
+			'text'      => (string) ( $p['text'] ?? $p['title'] ?? '' ), // search results may use `title`.
 			'url'       => isset( $p['url'] ) ? esc_url_raw( $p['url'] ) : '',
 			'share_urn' => isset( $p['share_urn'] ) ? (string) $p['share_urn'] : '',
 			'timestamp' => isset( $p['created_at'] ) ? (int) strtotime( $p['created_at'] ) : 0,

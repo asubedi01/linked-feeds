@@ -9,6 +9,7 @@ $pages = array(
 	'linkedin-demo-profile-grid' => array( 'LinkedIn Feed - Profile (Grid)', __DIR__ . '/profile-grid.html' ),
 	'linkedin-demo-company-grid' => array( 'LinkedIn Feed - Company (Grid)', __DIR__ . '/company-grid.html' ),
 	'linkedin-demo-layouts'      => array( 'LinkedIn Feed - Layouts',        __DIR__ . '/layouts.html' ),
+	'linkedin-demo-content-scopes' => array( 'LinkedIn Feed - Content Scopes', __DIR__ . '/content-scopes.html' ),
 	'linkedin-demo-comparison'   => array( 'LinkedIn Feed - Provider Comparison', __DIR__ . '/comparison.html' ),
 );
 

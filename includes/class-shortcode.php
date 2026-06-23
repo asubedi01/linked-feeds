@@ -37,6 +37,8 @@ class LinkedIn_Feeds_Shortcode {
 				'type'     => 'profile', // profile | company.
 				'user'     => '',        // public username for profile feeds.
 				'company'  => '',        // company slug for company feeds.
+				'tag'      => '',        // hashtag (without #) for type="hashtag".
+				'query'    => '',        // keyword(s) for type="search".
 				'demo'     => '',        // "1" → render bundled sample, no API call.
 				'layout'      => 'grid',    // grid | list | masonry.
 				'limit'       => 0,         // 0 = all returned.
@@ -52,9 +54,11 @@ class LinkedIn_Feeds_Shortcode {
 		$provider = isset( $choices[ $provider ] ) ? $provider : null;
 
 		$args = array(
-			'type'        => in_array( $atts['type'], array( 'profile', 'company' ), true ) ? $atts['type'] : 'profile',
+			'type'        => in_array( $atts['type'], array( 'profile', 'company', 'hashtag', 'search' ), true ) ? $atts['type'] : 'profile',
 			'user'        => sanitize_text_field( $atts['user'] ),
 			'company'     => sanitize_text_field( $atts['company'] ),
+			'tag'         => sanitize_text_field( $atts['tag'] ),
+			'query'       => sanitize_text_field( $atts['query'] ),
 			'demo'        => filter_var( $atts['demo'], FILTER_VALIDATE_BOOLEAN ),
 			'layout'      => in_array( $atts['layout'], array( 'grid', 'list', 'masonry', 'carousel' ), true ) ? $atts['layout'] : 'grid',
 			'limit'       => max( 0, (int) $atts['limit'] ),

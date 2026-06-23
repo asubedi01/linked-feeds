@@ -21,15 +21,19 @@
 
 | Attribute | Values | Default | Purpose |
 |---|---|---|---|
-| `type` | `profile` \| `company` | `profile` | Personal feed vs. company-page feed |
+| `type` | `profile` \| `company` \| `hashtag` \| `search` | `profile` | Content scope |
 | `user` | public username (e.g. `williamhgates`) | — | Source for `type="profile"` (live) |
 | `company` | company slug (e.g. `microsoft`) | — | Source for `type="company"` (live) |
+| `tag` | hashtag without `#` (e.g. `AI`) | — | Source for `type="hashtag"` (live) |
+| `query` | keyword(s) (e.g. `marketing`) | — | Source for `type="search"` (live) |
 | `demo` | `1` / `true` | off | Render bundled sample, **no API call** |
 | `layout` | `grid` \| `list` \| `masonry` \| `carousel` | `grid` | Visual arrangement (see below) |
 | `limit` | integer | `0` (all) | Cap number of posts shown |
 | `provider` | `fresh-scraper` \| `fresh-profile` | (settings) | Override the configured data provider for this one feed |
 
 Invalid values fall back to the default (e.g. an unknown `layout` → `grid`, an unregistered `provider` → the settings default). Admins see API errors inline; visitors see nothing.
+
+**Content scopes (all four):** `profile`, `company`, `hashtag`, `search`. Hashtag/search run on the `search-posts` endpoint (`fresh-profile` verified; `fresh-scraper`'s search returned 429 in testing, so the plugin auto-routes hashtag/search to a search-capable provider). Demo: `[linkedin_feed demo="1" type="hashtag" tag="AI"]` · `[linkedin_feed demo="1" type="search" query="AI"]`. Live: `[linkedin_feed type="hashtag" tag="AI"]`. The **`linkedin-demo-content-scopes`** page shows all four scopes. ⚠️ Hashtag/search pulls arbitrary third-party posts by topic — the highest-compliance-risk scope, no official-API fallback (see Verdict).
 
 ---
 

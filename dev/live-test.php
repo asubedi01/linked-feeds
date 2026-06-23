@@ -41,6 +41,18 @@ function wp_remote_get( $url, $args = array() ) {
 	curl_close( $ch );
 	return array( 'code' => $code, 'body' => $body );
 }
+function wp_json_encode( $v ) { return json_encode( $v ); }
+function wp_remote_post( $url, $args = array() ) {
+	$ch      = curl_init( $url );
+	$headers = array();
+	foreach ( ( $args['headers'] ?? array() ) as $k => $v ) { $headers[] = "{$k}: {$v}"; }
+	curl_setopt_array( $ch, array( CURLOPT_RETURNTRANSFER => true, CURLOPT_POST => true, CURLOPT_POSTFIELDS => $args['body'] ?? '', CURLOPT_HTTPHEADER => $headers, CURLOPT_TIMEOUT => $args['timeout'] ?? 25 ) );
+	$body = curl_exec( $ch );
+	if ( false === $body ) { return new WP_Error( 'http', curl_error( $ch ) ); }
+	$code = curl_getinfo( $ch, CURLINFO_RESPONSE_CODE );
+	curl_close( $ch );
+	return array( 'code' => $code, 'body' => $body );
+}
 function wp_remote_retrieve_response_code( $r ) { return is_array( $r ) ? $r['code'] : 0; }
 function wp_remote_retrieve_body( $r ) { return is_array( $r ) ? $r['body'] : ''; }
 function wp_remote_retrieve_response_message( $r ) { return ''; }
@@ -73,6 +85,11 @@ function summarize( $label, $posts ) {
 $fs = LinkedIn_Feeds_Provider::make( 'fresh-scraper' );
 summarize( 'fresh-scraper company/microsoft', $fs->get_feed( 'company', 'microsoft' ) );
 
-// 2. fresh-profile (not subscribed) — confirms gate + clean error surfacing (free 403).
+// 2. fresh-profile — profile feed.
 $fp = LinkedIn_Feeds_Provider::make( 'fresh-profile' );
 summarize( 'fresh-profile profile/williamhgates', $fp->get_feed( 'profile', 'williamhgates' ) );
+
+// 3. Hashtag/search (POST /search-posts on fresh-profile; GET /api/v1/search/posts on
+//    fresh-scraper — the latter returned upstream 429 in testing).
+summarize( 'fresh-profile hashtag/#AI', $fp->get_feed( 'hashtag', 'AI' ) );
+summarize( 'fresh-scraper hashtag/#AI', $fs->get_feed( 'hashtag', 'AI' ) );

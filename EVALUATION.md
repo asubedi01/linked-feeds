@@ -37,7 +37,8 @@ Outstanding probe: `org-posts` against a company page we admin — **closed sinc
 ## Alternative explored: RapidAPI third-party providers (prototype built)
 
 Since the official-API no-go, we evaluated the **RapidAPI** route (third-party services exposing LinkedIn data by API key — the mechanism behind the URL-paste competitors) and built a **working WordPress prototype**:
-- **Both feed types** (personal + company), **two switchable providers**, **four layouts** (grid/list/masonry/carousel), post-detail popup, lightbox, and full media (images, video, **PDF/document carousels**, **article previews** — the LinkedIn-native types competitors mostly miss). Verified live against real data.
+- **All three content scopes** (personal + company + **hashtag/search**), **two switchable providers**, **four layouts** (grid/list/masonry/carousel), post-detail popup, lightbox, and full media (images, video, **PDF/document carousels**, **article previews** — the LinkedIn-native types competitors mostly miss). Verified live (incl. `#AI` search → 49 posts on fresh-profile; fresh-scraper search 429'd — auto-routes to the reliable provider).
+- **Scope note:** hashtag/search is the **highest-compliance-risk** scope (arbitrary third-party posts by topic) with **no official-API fallback** — enable last, flag to legal.
 - **Technically, the product is fully buildable this way** — the data is sufficient; the rest is front-end polish.
 
 But two constraints gate it:
